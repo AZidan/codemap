@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "azidan-plugins",
+  "version": "1.0.0",
+  "description": "CodeMap and other developer productivity plugins by AZidan",
+  "owner": {
+    "name": "AZidan",
+    "email": "azidan@users.noreply.github.com"
+  },
+  "plugins": [
+    {
+      "name": "codemap",
+      "description": "Structural codebase indexing for efficient navigation. Reduces token consumption by 60-80% through targeted line-range reads instead of full file scans.",
+      "version": "1.0.0",
+      "author": {
+        "name": "AZidan"
+      },
+      "source": "./plugin",
+      "category": "productivity"
+    }
+  ]
+}
