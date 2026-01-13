@@ -11,7 +11,7 @@
 
 Stop burning tokens on full-file reads. CodeMap creates a lightweight navigation index so LLMs read only the code they need.
 
-[Quick Start](#-tldr) • [Installation](#installation) • [Commands](#commands) • [Claude Plugin](#-claude-code-plugin) • [Comparison](#comparison-with-alternatives)
+[Quick Start](#-tldr) • [Installation](#installation) • [Commands](#commands) • [Using with LLMs](#-using-codemap-with-llms) • [Claude Plugin](#-claude-code-plugin) • [Comparison](#comparison-with-alternatives)
 
 </div>
 
@@ -507,6 +507,107 @@ Here's how an LLM should use CodeMap:
 5. Run: codemap validate src/user.py
    → Up to date ✓ (no need to re-read!)
 ```
+
+---
+
+## 🤖 Using CodeMap with LLMs
+
+CodeMap is designed to work seamlessly with AI coding assistants like Claude, GPT, Cursor, and Aider. This section helps you integrate CodeMap into your AI workflows.
+
+### Quick Integration
+
+Add CodeMap instructions to your AI assistant's context:
+
+1. **For Claude Code**: Install the [plugin](#-claude-code-plugin) (automatic integration)
+2. **For other AI tools**: Reference the docs in your system instructions
+
+### Documentation Files
+
+We provide two instruction files in the `docs/` folder:
+
+- **[`docs/AI_ASSISTANT_INSTRUCTIONS.md`](docs/AI_ASSISTANT_INSTRUCTIONS.md)** — Comprehensive guide for AI assistants
+  - Complete workflow examples
+  - Best practices and when to use CodeMap
+  - Symbol types and filtering options
+  - Real-world usage patterns
+
+- **[`docs/CODEMAP_INSTRUCTIONS_EMBED.md`](docs/CODEMAP_INSTRUCTIONS_EMBED.md)** — Quick reference for embedding
+  - Minimal version for space-constrained contexts
+  - Copy-paste ready snippets
+  - Essential commands only
+
+### How to Use These Files
+
+#### Option 1: Embed in Project Instructions
+
+Add to your project's `.claude/skills/`, `copilot-instructions.md`, or `CLAUDE.md`:
+
+```bash
+# Copy full instructions
+cat docs/AI_ASSISTANT_INSTRUCTIONS.md >> CLAUDE.md
+
+# Or use the minimal version
+cat docs/CODEMAP_INSTRUCTIONS_EMBED.md >> CLAUDE.md
+```
+
+#### Option 2: Reference in Chat
+
+```markdown
+"Please read docs/AI_ASSISTANT_INSTRUCTIONS.md to learn how to use CodeMap for navigation"
+```
+
+#### Option 3: Include in System Prompt
+
+For custom AI tools, include the instructions in your system prompt:
+
+```python
+system_prompt = f"""
+{open("docs/AI_ASSISTANT_INSTRUCTIONS.md").read()}
+
+Now help the user with their coding task...
+"""
+```
+
+### Example Workflow
+
+Here's how an AI assistant should use CodeMap:
+
+```bash
+# User asks: "Refactor the UserService class"
+
+# 1. AI finds the symbol
+$ codemap find "UserService"
+→ src/services/user.py:15-189 [class] UserService
+
+# 2. AI reads only lines 15-189 (not the whole 500-line file)
+# Saves ~4,000 tokens
+
+# 3. AI checks structure to understand nested methods
+$ codemap show src/services/user.py
+→ Shows all methods with line ranges
+
+# 4. AI validates before re-reading after context reset
+$ codemap validate src/services/user.py
+→ Up to date ✓ (no need to re-read)
+```
+
+### Benefits for AI Assistants
+
+- **60-80% fewer tokens** on navigation tasks
+- **Faster responses** with targeted reads
+- **Better context management** across long sessions
+- **Automatic freshness checking** to avoid stale line ranges
+
+### Supported AI Tools
+
+CodeMap works with:
+
+- ✅ **Claude Code** (native plugin)
+- ✅ **Cursor** (via custom instructions)
+- ✅ **Aider** (via command-line integration)
+- ✅ **Copilot** (via workspace instructions)
+- ✅ **Custom GPT** (via system prompt)
+- ✅ **Any LLM with shell access** (via CLI)
 
 ---
 
