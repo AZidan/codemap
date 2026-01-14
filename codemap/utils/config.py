@@ -16,6 +16,9 @@ DEFAULT_INCLUDE_PATTERNS = [
     "**/*.tsx",
     "**/*.js",
     "**/*.jsx",
+    "**/*.md",
+    "**/*.yaml",
+    "**/*.yml",
 ]
 
 DEFAULT_EXCLUDE_PATTERNS = [
@@ -38,7 +41,7 @@ DEFAULT_EXCLUDE_PATTERNS = [
 class Config:
     """CodeMap configuration."""
 
-    languages: list[str] = field(default_factory=lambda: ["python", "typescript", "javascript"])
+    languages: list[str] = field(default_factory=lambda: ["python", "typescript", "javascript", "markdown", "yaml"])
     exclude_patterns: list[str] = field(default_factory=lambda: DEFAULT_EXCLUDE_PATTERNS.copy())
     include_patterns: list[str] = field(default_factory=lambda: DEFAULT_INCLUDE_PATTERNS.copy())
     max_docstring_length: int = 150

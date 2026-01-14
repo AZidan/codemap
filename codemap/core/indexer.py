@@ -66,6 +66,13 @@ class Indexer:
         except ImportError:
             logger.debug("JavaScript parser not available (tree-sitter not installed)")
 
+        # Markdown and YAML parsers (always available)
+        from ..parsers.markdown_parser import MarkdownParser
+        from ..parsers.yaml_parser import YamlParser
+
+        self._parsers["markdown"] = MarkdownParser()
+        self._parsers["yaml"] = YamlParser()
+
     @classmethod
     def load_existing(cls, root: Path | None = None) -> "Indexer":
         """Load an existing codemap and create an indexer.

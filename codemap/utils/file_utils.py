@@ -97,6 +97,8 @@ def _get_extensions_for_languages(languages: list[str]) -> list[str]:
         "python": [".py", ".pyi"],
         "typescript": [".ts", ".tsx"],
         "javascript": [".js", ".jsx"],
+        "markdown": [".md", ".markdown"],
+        "yaml": [".yaml", ".yml"],
     }
 
     extensions = []
@@ -140,5 +142,9 @@ def get_language(filepath: Path) -> str | None:
         ".tsx": "typescript",
         ".js": "javascript",
         ".jsx": "javascript",
+        ".md": "markdown",
+        ".markdown": "markdown",
+        ".yaml": "yaml",
+        ".yml": "yaml",
     }
     return extension_to_lang.get(suffix)
