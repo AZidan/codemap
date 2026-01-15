@@ -17,11 +17,15 @@ This keeps the index automatically updated as files change. Run once at the star
 ### Commands
 ```bash
 codemap find "SymbolName"           # Find class/function/method/type by name
-codemap find "name" --type method   # Filter by type (class|function|method|interface|type)
-codemap show path/to/file.ts        # Show file structure with line ranges
+codemap find "name" --type method   # Filter by type (class|function|method|interface|enum|struct)
+codemap show path/to/file.py        # Show file structure with line ranges
 codemap validate                    # Check if index is fresh
+codemap stats                       # View index statistics
 codemap watch . &                   # Start watch mode (auto-updates index)
 ```
+
+### Supported Languages
+Python, TypeScript, JavaScript, Kotlin, Swift, Go, Java, C#, Rust, Markdown, YAML
 
 ### Workflow
 1. **Start watch mode**: `codemap watch . &` (run once per session)

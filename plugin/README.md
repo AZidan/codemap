@@ -13,7 +13,20 @@ The CodeMap skill teaches Claude how to use pre-built codebase indexes stored in
 Install the CodeMap CLI tool:
 
 ```bash
-pip install codemap
+pip install git+https://github.com/AZidan/codemap.git
+```
+
+For additional language support:
+
+```bash
+# TypeScript/JavaScript
+pip install tree-sitter-javascript tree-sitter-typescript
+
+# Kotlin
+pip install tree-sitter-kotlin
+
+# Swift
+pip install tree-sitter-swift
 ```
 
 ### Install the Plugin
@@ -57,9 +70,14 @@ You can also explicitly ask Claude to use CodeMap:
 
 ## What Gets Indexed
 
-- **Python**: Classes, functions, methods, async functions
-- **TypeScript/JavaScript**: Classes, functions, methods, interfaces, types, enums
-- **More languages**: Coming soon
+| Language | Symbol Types |
+|----------|-------------|
+| **Python** | Classes, functions, methods, async functions/methods |
+| **TypeScript/JavaScript** | Classes, functions, methods, interfaces, types, enums |
+| **Kotlin** | Classes, interfaces, objects, functions |
+| **Swift** | Structs, classes, protocols, enums, functions |
+| **Markdown** | H2/H3/H4 sections |
+| **YAML** | Keys, nested sections |
 
 ## Commands Available to Claude
 

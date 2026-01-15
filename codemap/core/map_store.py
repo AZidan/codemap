@@ -460,7 +460,7 @@ class MapStore:
             "last_full_index": datetime.now(timezone.utc).isoformat(),
         }
 
-    def _count_symbols(self, symbols: list[Symbol]) -> int:
+    def _count_symbols(self, symbols: list[Symbol] | None) -> int:
         """Count total symbols including children.
 
         Args:
@@ -469,9 +469,12 @@ class MapStore:
         Returns:
             Total count.
         """
+        if not symbols:
+            return 0
         count = len(symbols)
         for symbol in symbols:
-            count += self._count_symbols(symbol.children)
+            if symbol.children:
+                count += self._count_symbols(symbol.children)
         return count
 
     def set_metadata(self, root: str, config: dict) -> None:

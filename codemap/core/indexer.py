@@ -73,6 +73,20 @@ class Indexer:
         self._parsers["markdown"] = MarkdownParser()
         self._parsers["yaml"] = YamlParser()
 
+        # Kotlin parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.kotlin_parser import KotlinParser
+            self._parsers["kotlin"] = KotlinParser()
+        except ImportError:
+            logger.debug("Kotlin parser not available (tree-sitter-kotlin not installed)")
+
+        # Swift parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.swift_parser import SwiftParser
+            self._parsers["swift"] = SwiftParser()
+        except ImportError:
+            logger.debug("Swift parser not available (tree-sitter-swift not installed)")
+
     @classmethod
     def load_existing(cls, root: Path | None = None) -> "Indexer":
         """Load an existing codemap and create an indexer.
@@ -183,7 +197,7 @@ class Indexer:
 
         return symbols
 
-    def _count_symbols(self, symbols: list[Symbol]) -> int:
+    def _count_symbols(self, symbols: list[Symbol] | None) -> int:
         """Count total symbols including children.
 
         Args:
@@ -192,9 +206,12 @@ class Indexer:
         Returns:
             Total count.
         """
+        if not symbols:
+            return 0
         count = len(symbols)
         for symbol in symbols:
-            count += self._count_symbols(symbol.children)
+            if symbol.children:
+                count += self._count_symbols(symbol.children)
         return count
 
     def update_file(self, filepath: str | Path) -> dict:

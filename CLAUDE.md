@@ -26,6 +26,12 @@ codemap find "ClassName"
 
 This project has a `.codemap/` index. **Use CodeMap before scanning files.**
 
+### Start Watch Mode First
+```bash
+codemap watch . &
+```
+This keeps the index automatically updated as files change. Run once at the start of each session.
+
 ### Commands
 ```bash
 codemap find "SymbolName"           # Find class/function/method/type by name
@@ -33,13 +39,14 @@ codemap find "name" --type method   # Filter by type (class|function|method|inte
 codemap show path/to/file.py        # Show file structure with line ranges
 codemap validate                    # Check if index is fresh
 codemap stats                       # View index statistics
+codemap watch . &                   # Start watch mode (auto-updates index)
 ```
 
 ### Workflow
-1. **Find symbol**: `codemap find "MapStore"` → `codemap/core/map_store.py:115-507 [class]`
-2. **Read targeted lines**: Read only lines 115-507 instead of the full file
-3. **Explore structure**: `codemap show codemap/core/map_store.py` to see all methods with line ranges
-4. **Validate before re-read**: After context compaction, `codemap validate` checks if line numbers are still valid
+1. **Start watch mode**: `codemap watch . &` (run once per session)
+2. **Find symbol**: `codemap find "MapStore"` → `codemap/core/map_store.py:115-507 [class]`
+3. **Read targeted lines**: Read only lines 115-507 instead of the full file
+4. **Explore structure**: `codemap show codemap/core/map_store.py` to see all methods with line ranges
 
 ### When to Use
 - **USE CodeMap**: Finding symbol definitions, understanding file structure, locating code by name
@@ -52,19 +59,28 @@ Symbol data is in `.codemap/<path>/.codemap.json` files - read directly for prog
 
 ```
 codemap/
-├── cli.py                 # Click CLI - entry point
+├── cli.py                    # Click CLI - entry point
 ├── core/
-│   ├── indexer.py         # Orchestrates indexing
-│   ├── hasher.py          # SHA256 file hashing
-│   └── map_store.py       # JSON map CRUD operations
+│   ├── indexer.py            # Orchestrates indexing
+│   ├── hasher.py             # SHA256 file hashing
+│   └── map_store.py          # JSON map CRUD operations
 ├── parsers/
-│   ├── base.py            # Abstract Parser class
-│   ├── python_parser.py   # AST-based (stdlib only)
+│   ├── base.py               # Abstract Parser class
+│   ├── treesitter_base.py    # Config-driven tree-sitter base
+│   ├── python_parser.py      # AST-based (stdlib only)
 │   ├── typescript_parser.py  # tree-sitter based
-│   └── javascript_parser.py  # tree-sitter based
+│   ├── javascript_parser.py  # tree-sitter based
+│   ├── kotlin_parser.py      # tree-sitter based
+│   ├── swift_parser.py       # tree-sitter based
+│   ├── go_parser.py          # tree-sitter based
+│   ├── java_parser.py        # tree-sitter based
+│   ├── csharp_parser.py      # tree-sitter based
+│   ├── rust_parser.py        # tree-sitter based
+│   ├── markdown_parser.py    # Regex-based H2/H3/H4 headers
+│   └── yaml_parser.py        # Recursive key hierarchy
 ├── hooks/
-│   ├── pre-commit         # Bash script
-│   └── installer.py       # Copies hook to .git/hooks/
+│   ├── pre-commit            # Bash script
+│   └── installer.py          # Copies hook to .git/hooks/
 └── tests/
 ```
 
@@ -101,6 +117,14 @@ Build in this sequence:
 Extract only these symbol types:
 - **Python**: `class`, `function`, `method`, `async_function`, `async_method`
 - **TypeScript/JS**: `class`, `function`, `method`, `arrow_function` (named only)
+- **Kotlin**: `class`, `interface`, `function`, `method`, `object`
+- **Swift**: `class`, `struct`, `protocol`, `enum`, `function`, `method`
+- **Go**: `function`, `method`, `struct`, `interface`, `type`
+- **Java**: `class`, `interface`, `enum`, `method`
+- **C#**: `class`, `interface`, `struct`, `enum`, `method`, `property`
+- **Rust**: `function`, `struct`, `enum`, `trait`, `impl`, `module`
+- **Markdown**: `section` (H2), `subsection` (H3), `subsubsection` (H4)
+- **YAML**: `key`, `section` (nested mappings), `list`, `item`
 
 Skip:
 - Variables/constants (too noisy)
@@ -163,6 +187,16 @@ Default include:
 **/*.tsx
 **/*.js
 **/*.jsx
+**/*.kt
+**/*.kts
+**/*.swift
+**/*.go
+**/*.java
+**/*.cs
+**/*.rs
+**/*.md
+**/*.yaml
+**/*.yml
 ```
 
 Default exclude:
@@ -237,8 +271,18 @@ pyyaml>=6.0       # Config file parsing
 
 # For TypeScript/JavaScript parsing
 tree-sitter>=0.21
-tree-sitter-javascript>=0.21  
+tree-sitter-javascript>=0.21
 tree-sitter-typescript>=0.21
+
+# For Kotlin/Swift parsing
+tree-sitter-kotlin>=1.0
+tree-sitter-swift>=0.0.1
+
+# For other languages
+tree-sitter-go>=0.21
+tree-sitter-java>=0.21
+tree-sitter-c-sharp>=0.21
+tree-sitter-rust>=0.21
 
 # Dev
 pytest>=7.0

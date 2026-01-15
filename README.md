@@ -362,7 +362,7 @@ See [plugin/README.md](plugin/README.md) for detailed documentation.
 | **Watch mode** | ✅ | ❌ | ❌ | ❌ |
 | **Claude Code plugin** | ✅ | ❌ | ✅ (MCP) | ✅ (MCP) |
 | **Setup complexity** | Low | Medium | High (LSP) | Low |
-| **Languages supported** | 3 | 20+ | 10+ | Many |
+| **Languages supported** | 9 | 20+ | 10+ | Many |
 | **Approach** | Navigation | Summarization | Semantic | Context building |
 
 ### Why CodeMap is Different
@@ -382,6 +382,8 @@ This is why CodeMap achieves 41% better token efficiency than LSP-based tools on
 | **Python** | stdlib `ast` | (included) | class, function, method, async_function, async_method |
 | **TypeScript** | tree-sitter | see below | class, function, method, interface, type, enum |
 | **JavaScript** | tree-sitter | see below | class, function, method, async_function, async_method |
+| **Kotlin** | tree-sitter | see below | class, interface, function, method, object |
+| **Swift** | tree-sitter | see below | class, struct, protocol, enum, function, method |
 | **Go** | tree-sitter | see below | function, method, struct, interface, type |
 | **Java** | tree-sitter | see below | class, interface, enum, method |
 | **C#** | tree-sitter | see below | class, interface, struct, enum, method, property |
@@ -390,6 +392,8 @@ This is why CodeMap achieves 41% better token efficiency than LSP-based tools on
 ```bash
 # Install with specific language support
 pip install "codemap[treesitter] @ git+https://github.com/AZidan/codemap.git"  # TS/JS
+pip install "codemap[kotlin] @ git+https://github.com/AZidan/codemap.git"      # Kotlin
+pip install "codemap[swift] @ git+https://github.com/AZidan/codemap.git"       # Swift
 pip install "codemap[go] @ git+https://github.com/AZidan/codemap.git"          # Go
 pip install "codemap[java] @ git+https://github.com/AZidan/codemap.git"        # Java
 pip install "codemap[csharp] @ git+https://github.com/AZidan/codemap.git"      # C#
@@ -567,9 +571,16 @@ codemap/
 │   └── watcher.py         # File system watcher
 ├── parsers/
 │   ├── base.py            # Abstract parser interface
-│   ├── python_parser.py   # Python AST parser
+│   ├── treesitter_base.py # Base for tree-sitter parsers
+│   ├── python_parser.py   # Python AST parser (stdlib)
 │   ├── typescript_parser.py
-│   └── javascript_parser.py
+│   ├── javascript_parser.py
+│   ├── kotlin_parser.py   # Kotlin tree-sitter parser
+│   ├── swift_parser.py    # Swift tree-sitter parser
+│   ├── go_parser.py
+│   ├── java_parser.py
+│   ├── csharp_parser.py
+│   └── rust_parser.py
 ├── hooks/
 │   └── installer.py       # Git hook installation
 └── utils/
@@ -583,7 +594,7 @@ codemap/
 
 Contributions are welcome! Here's where help is needed:
 
-- [ ] **New language parsers** — Go, Rust, Java, C#
+- [ ] **New language parsers** — Ruby, PHP, Scala, more!
 - [ ] **MCP server mode** — For non-Claude tools
 - [ ] **Fuzzy symbol search** — `codemap find "usr srv"` → `UserService`
 - [ ] **VSCode extension** — GUI for non-CLI users

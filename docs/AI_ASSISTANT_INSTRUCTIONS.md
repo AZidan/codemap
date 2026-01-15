@@ -85,16 +85,19 @@ Now you can read just the specific method you need (e.g., lines 100-145 for `cre
 
 ## Symbol Types
 
-| Type | Description |
-|------|-------------|
-| `class` | Class declaration |
-| `function` | Function declaration |
-| `method` | Class method |
-| `async_function` | Async function |
-| `async_method` | Async class method |
-| `interface` | TypeScript interface |
-| `type` | TypeScript type alias |
-| `enum` | Enum declaration |
+| Type | Description | Languages |
+|------|-------------|-----------|
+| `class` | Class declaration | Python, TS/JS, Kotlin, Swift, Java, C#, Go (struct) |
+| `function` | Function declaration | All languages |
+| `method` | Class/struct method | All languages |
+| `async_function` | Async function | Python, TS/JS |
+| `async_method` | Async class method | Python, TS/JS |
+| `interface` | Interface/protocol | TS, Kotlin, Swift (protocol), Go, Java, C# |
+| `type` | Type alias | TypeScript |
+| `enum` | Enum declaration | TS, Kotlin, Swift, Java, C#, Rust |
+| `struct` | Struct declaration | Swift, Go, C#, Rust |
+| `trait` | Trait declaration | Rust |
+| `object` | Object declaration | Kotlin |
 
 ## Filtering by Type
 

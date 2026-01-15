@@ -43,6 +43,18 @@ try:
 except ImportError:
     RustParser = None
 
+try:
+    from .kotlin_parser import KotlinParser
+    __all__.append("KotlinParser")
+except ImportError:
+    KotlinParser = None
+
+try:
+    from .swift_parser import SwiftParser
+    __all__.append("SwiftParser")
+except ImportError:
+    SwiftParser = None
+
 
 def get_available_parsers() -> list[type[Parser]]:
     """Return list of all available parser classes."""
@@ -60,6 +72,10 @@ def get_available_parsers() -> list[type[Parser]]:
         parsers.append(CSharpParser)
     if RustParser:
         parsers.append(RustParser)
+    if KotlinParser:
+        parsers.append(KotlinParser)
+    if SwiftParser:
+        parsers.append(SwiftParser)
 
     return parsers
 
@@ -67,6 +83,13 @@ def get_available_parsers() -> list[type[Parser]]:
 def get_parser_for_extension(ext: str) -> type[Parser] | None:
     """Get the appropriate parser class for a file extension."""
     for parser_cls in get_available_parsers():
-        if ext in parser_cls.extensions:
-            return parser_cls
+        try:
+            extensions = parser_cls.extensions
+            # Handle property objects (need instance) vs class attributes
+            if isinstance(extensions, property):
+                continue
+            if ext in extensions:
+                return parser_cls
+        except (TypeError, AttributeError):
+            continue
     return None

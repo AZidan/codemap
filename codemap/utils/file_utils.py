@@ -99,6 +99,8 @@ def _get_extensions_for_languages(languages: list[str]) -> list[str]:
         "javascript": [".js", ".jsx"],
         "markdown": [".md", ".markdown"],
         "yaml": [".yaml", ".yml"],
+        "kotlin": [".kt", ".kts"],
+        "swift": [".swift"],
     }
 
     extensions = []
@@ -146,5 +148,8 @@ def get_language(filepath: Path) -> str | None:
         ".markdown": "markdown",
         ".yaml": "yaml",
         ".yml": "yaml",
+        ".kt": "kotlin",
+        ".kts": "kotlin",
+        ".swift": "swift",
     }
     return extension_to_lang.get(suffix)
