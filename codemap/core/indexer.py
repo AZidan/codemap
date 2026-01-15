@@ -87,6 +87,20 @@ class Indexer:
         except ImportError:
             logger.debug("Swift parser not available (tree-sitter-swift not installed)")
 
+        # C parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.c_parser import CParser
+            self._parsers["c"] = CParser()
+        except ImportError:
+            logger.debug("C parser not available (tree-sitter-c not installed)")
+
+        # C++ parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.cpp_parser import CppParser
+            self._parsers["cpp"] = CppParser()
+        except ImportError:
+            logger.debug("C++ parser not available (tree-sitter-cpp not installed)")
+
     @classmethod
     def load_existing(cls, root: Path | None = None) -> "Indexer":
         """Load an existing codemap and create an indexer.

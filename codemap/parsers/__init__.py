@@ -55,6 +55,18 @@ try:
 except ImportError:
     SwiftParser = None
 
+try:
+    from .c_parser import CParser
+    __all__.append("CParser")
+except ImportError:
+    CParser = None
+
+try:
+    from .cpp_parser import CppParser
+    __all__.append("CppParser")
+except ImportError:
+    CppParser = None
+
 
 def get_available_parsers() -> list[type[Parser]]:
     """Return list of all available parser classes."""
@@ -76,6 +88,10 @@ def get_available_parsers() -> list[type[Parser]]:
         parsers.append(KotlinParser)
     if SwiftParser:
         parsers.append(SwiftParser)
+    if CParser:
+        parsers.append(CParser)
+    if CppParser:
+        parsers.append(CppParser)
 
     return parsers
 

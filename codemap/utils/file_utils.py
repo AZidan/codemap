@@ -101,6 +101,8 @@ def _get_extensions_for_languages(languages: list[str]) -> list[str]:
         "yaml": [".yaml", ".yml"],
         "kotlin": [".kt", ".kts"],
         "swift": [".swift"],
+        "c": [".c", ".h"],
+        "cpp": [".cpp", ".hpp", ".cc", ".hh", ".cxx", ".hxx"],
     }
 
     extensions = []
@@ -151,5 +153,13 @@ def get_language(filepath: Path) -> str | None:
         ".kt": "kotlin",
         ".kts": "kotlin",
         ".swift": "swift",
+        ".c": "c",
+        ".h": "c",  # Default to C for .h files
+        ".cpp": "cpp",
+        ".hpp": "cpp",
+        ".cc": "cpp",
+        ".hh": "cpp",
+        ".cxx": "cpp",
+        ".hxx": "cpp",
     }
     return extension_to_lang.get(suffix)
