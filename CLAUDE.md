@@ -76,6 +76,10 @@ codemap/
 │   ├── java_parser.py        # tree-sitter based
 │   ├── csharp_parser.py      # tree-sitter based
 │   ├── rust_parser.py        # tree-sitter based
+│   ├── c_parser.py           # tree-sitter based
+│   ├── cpp_parser.py         # tree-sitter based
+│   ├── html_parser.py        # tree-sitter based
+│   ├── css_parser.py         # tree-sitter based
 │   ├── markdown_parser.py    # Regex-based H2/H3/H4 headers
 │   └── yaml_parser.py        # Recursive key hierarchy
 ├── hooks/
@@ -123,6 +127,10 @@ Extract only these symbol types:
 - **Java**: `class`, `interface`, `enum`, `method`
 - **C#**: `class`, `interface`, `struct`, `enum`, `method`, `property`
 - **Rust**: `function`, `struct`, `enum`, `trait`, `impl`, `module`
+- **C**: `function`, `struct`, `enum`, `typedef`
+- **C++**: `class`, `struct`, `function`, `method`, `namespace`, `enum`, `template`
+- **HTML**: `element` (semantic: header, nav, main, section, article, aside, footer, form), `id` (elements with id attribute)
+- **CSS**: `class` (.selector), `id` (#selector), `selector` (element), `pseudo` (:root), `media` (@media), `keyframe` (@keyframes)
 - **Markdown**: `section` (H2), `subsection` (H3), `subsubsection` (H4)
 - **YAML**: `key`, `section` (nested mappings), `list`, `item`
 
@@ -194,6 +202,17 @@ Default include:
 **/*.java
 **/*.cs
 **/*.rs
+**/*.c
+**/*.h
+**/*.cpp
+**/*.hpp
+**/*.cc
+**/*.hh
+**/*.cxx
+**/*.hxx
+**/*.html
+**/*.htm
+**/*.css
 **/*.md
 **/*.yaml
 **/*.yml
@@ -283,6 +302,12 @@ tree-sitter-go>=0.21
 tree-sitter-java>=0.21
 tree-sitter-c-sharp>=0.21
 tree-sitter-rust>=0.21
+tree-sitter-c>=0.21
+tree-sitter-cpp>=0.21
+
+# For HTML/CSS parsing
+tree-sitter-html>=0.23
+tree-sitter-css>=0.23
 
 # Dev
 pytest>=7.0
@@ -294,3 +319,39 @@ pytest>=7.0
 2. Python parser should use ONLY stdlib `ast` module
 3. For tree-sitter issues, check their Python bindings docs
 4. Test with real-world files from open source projects
+
+## CodeMap - Codebase Index
+
+This project has a `.codemap/` index for efficient code navigation. **Use CodeMap before scanning files.**
+
+### Start Watch Mode First
+```bash
+codemap watch . &
+```
+This keeps the index automatically updated as files change. Run once at the start of each session.
+
+### Commands
+```bash
+codemap find "SymbolName"           # Find class/function/method/type by name
+codemap find "name" --type method   # Filter by type (class|function|method|interface|enum|struct)
+codemap show path/to/file.py        # Show file structure with line ranges
+codemap validate                    # Check if index is fresh
+codemap stats                       # View index statistics
+codemap watch . &                   # Start watch mode (auto-updates index)
+```
+
+### Supported Languages
+Python, TypeScript, JavaScript, Kotlin, Swift, Go, Java, C#, Rust, C, C++, Markdown, YAML
+
+### Workflow
+1. **Start watch mode**: `codemap watch . &` (run once per session)
+2. **Find symbol**: `codemap find "UserService"` → `src/services/user.ts:15-89 [class]`
+3. **Read targeted lines**: Read only lines 15-89 instead of the full file
+4. **Explore structure**: `codemap show src/services/user.ts` to see all methods/functions with line ranges
+
+### When to Use
+- **USE CodeMap**: Finding symbol definitions, understanding file structure, locating code by name
+- **READ full file**: Understanding implementation details, making edits, unindexed files
+
+### Direct JSON Access
+Symbol data is in `.codemap/<path>/.codemap.json` files - read directly for programmatic access.

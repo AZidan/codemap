@@ -49,14 +49,37 @@ rust = [
     "tree-sitter>=0.21",
     "tree-sitter-rust>=0.21",
 ]
+kotlin = [
+    "tree-sitter>=0.21",
+    "tree-sitter-kotlin>=1.0",
+]
+swift = [
+    "tree-sitter>=0.21",
+    "tree-sitter-swift>=0.0.1",
+]
+c = [
+    "tree-sitter>=0.21",
+    "tree-sitter-c>=0.21",
+]
+cpp = [
+    "tree-sitter>=0.21",
+    "tree-sitter-cpp>=0.21",
+]
+html = [
+    "tree-sitter>=0.21",
+    "tree-sitter-html>=0.23",
+]
+css = [
+    "tree-sitter>=0.21",
+    "tree-sitter-css>=0.23",
+]
 php = [
     "tree-sitter>=0.21",
     "tree-sitter-php>=0.23",
 ]
 # All languages bundle
 languages = [
-    "codemap[treesitter,go,java,csharp,rust,php]",
-]
+    "codemap[treesitter,go,java,csharp,rust,kotlin,swift,c,cpp,html,css,php]",
 watch = [
     "watchdog>=3.0",
 ]

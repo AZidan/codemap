@@ -25,7 +25,7 @@ codemap watch . &                   # Start watch mode (auto-updates index)
 ```
 
 ### Supported Languages
-Python, TypeScript, JavaScript, Kotlin, Swift, Go, Java, C#, Rust, Markdown, YAML
+Python, TypeScript, JavaScript, Kotlin, Swift, Go, Java, C#, Rust, C, C++, Markdown, YAML
 
 ### Workflow
 1. **Start watch mode**: `codemap watch . &` (run once per session)

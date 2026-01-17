@@ -56,6 +56,30 @@ except ImportError:
     SwiftParser = None
 
 try:
+    from .c_parser import CParser
+    __all__.append("CParser")
+except ImportError:
+    CParser = None
+
+try:
+    from .cpp_parser import CppParser
+    __all__.append("CppParser")
+except ImportError:
+    CppParser = None
+
+try:
+    from .html_parser import HtmlParser
+    __all__.append("HtmlParser")
+except ImportError:
+    HtmlParser = None
+
+try:
+    from .css_parser import CssParser
+    __all__.append("CssParser")
+except ImportError:
+    CssParser = None
+
+try:
     from .php_parser import PHPParser
     __all__.append("PHPParser")
 except ImportError:
@@ -82,6 +106,14 @@ def get_available_parsers() -> list[type[Parser]]:
         parsers.append(KotlinParser)
     if SwiftParser:
         parsers.append(SwiftParser)
+    if CParser:
+        parsers.append(CParser)
+    if CppParser:
+        parsers.append(CppParser)
+    if HtmlParser:
+        parsers.append(HtmlParser)
+    if CssParser:
+        parsers.append(CssParser)
     if PHPParser:
         parsers.append(PHPParser)
 

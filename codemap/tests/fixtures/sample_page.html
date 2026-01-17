@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample Page</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header id="site-header" class="main-header">
+        <nav id="main-nav" class="navigation">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="content">
+        <section id="hero" class="hero-section">
+            <h1>Welcome to Our Site</h1>
+            <p>This is the hero section with an important message.</p>
+        </section>
+
+        <section id="features">
+            <h2>Features</h2>
+            <article id="feature-1" class="feature-card">
+                <h3>Feature One</h3>
+                <p>Description of the first feature.</p>
+            </article>
+            <article id="feature-2" class="feature-card">
+                <h3>Feature Two</h3>
+                <p>Description of the second feature.</p>
+            </article>
+        </section>
+
+        <aside id="sidebar" class="sidebar-widget">
+            <h4>Related Links</h4>
+            <ul>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="/docs">Documentation</a></li>
+            </ul>
+        </aside>
+    </main>
+
+    <footer id="site-footer" class="main-footer">
+        <p>&copy; 2025 Sample Site</p>
+        <nav class="footer-nav">
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+        </nav>
+    </footer>
+
+    <form id="contact-form" action="/submit" method="post">
+        <input type="text" id="name-input" name="name" placeholder="Your name">
+        <input type="email" id="email-input" name="email" placeholder="Your email">
+        <textarea id="message-input" name="message"></textarea>
+        <button type="submit">Send</button>
+    </form>
+</body>
+</html>

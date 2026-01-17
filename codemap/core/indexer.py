@@ -87,6 +87,34 @@ class Indexer:
         except ImportError:
             logger.debug("Swift parser not available (tree-sitter-swift not installed)")
 
+        # C parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.c_parser import CParser
+            self._parsers["c"] = CParser()
+        except ImportError:
+            logger.debug("C parser not available (tree-sitter-c not installed)")
+
+        # C++ parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.cpp_parser import CppParser
+            self._parsers["cpp"] = CppParser()
+        except ImportError:
+            logger.debug("C++ parser not available (tree-sitter-cpp not installed)")
+
+        # HTML parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.html_parser import HtmlParser
+            self._parsers["html"] = HtmlParser()
+        except ImportError:
+            logger.debug("HTML parser not available (tree-sitter-html not installed)")
+
+        # CSS parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.css_parser import CssParser
+            self._parsers["css"] = CssParser()
+        except ImportError:
+            logger.debug("CSS parser not available (tree-sitter-css not installed)")
+
         # PHP parser (optional, requires tree-sitter)
         try:
             from ..parsers.php_parser import PHPParser

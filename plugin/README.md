@@ -27,6 +27,9 @@ pip install tree-sitter-kotlin
 
 # Swift
 pip install tree-sitter-swift
+
+# C/C++
+pip install tree-sitter-c tree-sitter-cpp
 ```
 
 ### Install the Plugin
@@ -76,6 +79,8 @@ You can also explicitly ask Claude to use CodeMap:
 | **TypeScript/JavaScript** | Classes, functions, methods, interfaces, types, enums |
 | **Kotlin** | Classes, interfaces, objects, functions |
 | **Swift** | Structs, classes, protocols, enums, functions |
+| **C** | Functions, structs, enums, typedefs |
+| **C++** | Classes, structs, functions, methods, namespaces, enums, templates |
 | **Markdown** | H2/H3/H4 sections |
 | **YAML** | Keys, nested sections |
 
