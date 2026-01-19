@@ -269,3 +269,116 @@ function add(a, b) {
         # JSDoc should be captured
         if symbols[0].docstring:
             assert "Adds two numbers" in symbols[0].docstring
+
+    def test_commonjs_named_function_expression(self, parser):
+        """Test CommonJS pattern: obj.method = function name() {}"""
+        source = '''
+app.handle = function handle(req, res) {
+    console.log('test');
+};
+'''
+        symbols = parser.parse(source, "test.js")
+
+        assert len(symbols) == 1
+        assert symbols[0].name == "handle"
+        assert symbols[0].type == "function"
+        assert "(req, res)" in symbols[0].signature
+
+    def test_commonjs_arrow_function(self, parser):
+        """Test CommonJS pattern: obj.method = () => {}"""
+        source = '''
+app.middleware = (req, res, next) => {
+    next();
+};
+'''
+        symbols = parser.parse(source, "test.js")
+
+        assert len(symbols) == 1
+        assert symbols[0].name == "middleware"
+        assert symbols[0].type == "function"
+        assert "(req, res, next)" in symbols[0].signature
+
+    def test_commonjs_async_function(self, parser):
+        """Test CommonJS pattern: obj.method = async function name() {}"""
+        source = '''
+app.fetch = async function fetch(url) {
+    return await fetch(url);
+};
+'''
+        symbols = parser.parse(source, "test.js")
+
+        assert len(symbols) == 1
+        assert symbols[0].name == "fetch"
+        assert symbols[0].type == "async_function"
+
+    def test_commonjs_module_exports(self, parser):
+        """Test CommonJS pattern: module.exports.name = function() {}"""
+        source = '''
+module.exports.helper = function helper(data) {
+    return data;
+};
+'''
+        symbols = parser.parse(source, "test.js")
+
+        assert len(symbols) == 1
+        assert symbols[0].name == "helper"
+        assert symbols[0].type == "function"
+
+    def test_commonjs_prototype_assignment(self, parser):
+        """Test CommonJS pattern: Constructor.prototype.method = function() {}"""
+        source = '''
+Response.prototype.send = function send(body) {
+    return body;
+};
+'''
+        symbols = parser.parse(source, "test.js")
+
+        assert len(symbols) == 1
+        assert symbols[0].name == "send"
+        assert symbols[0].type == "function"
+
+    def test_commonjs_anonymous_function_uses_property_name(self, parser):
+        """Test that anonymous functions use the property name for indexing."""
+        source = '''
+app.anon = function() {
+    return null;
+};
+'''
+        symbols = parser.parse(source, "test.js")
+
+        # Anonymous function uses property name from member expression
+        assert len(symbols) == 1
+        assert symbols[0].name == "anon"
+        assert symbols[0].type == "function"
+
+    def test_commonjs_multiple_patterns(self, parser):
+        """Test parsing multiple CommonJS patterns in one file."""
+        source = '''
+app.handle = function handle(req, res) {
+    console.log('test');
+};
+
+res.json = function json(obj) {
+    return obj;
+};
+
+app.middleware = (req, res, next) => {
+    next();
+};
+
+app.fetch = async function fetch(url) {
+    return await fetch(url);
+};
+'''
+        symbols = parser.parse(source, "test.js")
+
+        assert len(symbols) == 4
+        names = [s.name for s in symbols]
+        assert "handle" in names
+        assert "json" in names
+        assert "middleware" in names
+        assert "fetch" in names
+
+        # Verify async detection
+        fetch_symbol = next(s for s in symbols if s.name == "fetch")
+        assert fetch_symbol.type == "async_function"

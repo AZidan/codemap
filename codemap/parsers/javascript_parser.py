@@ -89,6 +89,9 @@ class JavaScriptParser(Parser):
         elif node.type in ("lexical_declaration", "variable_declaration"):
             # Handle const/let/var arrow functions
             return self._parse_variable_declaration(node, source_bytes)
+        elif node.type == "expression_statement":
+            # Handle CommonJS patterns: app.method = function() {}
+            return self._parse_expression_statement(node, source_bytes)
         return None
 
     def _parse_export(self, node: "Node", source_bytes: bytes) -> list[Symbol]:
@@ -265,6 +268,74 @@ class JavaScriptParser(Parser):
                         docstring=self._get_preceding_comment(node, source_bytes),
                     )
         return None
+
+    def _parse_expression_statement(
+        self, node: "Node", source_bytes: bytes
+    ) -> Optional[Symbol]:
+        """Parse an expression statement for CommonJS function assignments.
+
+        Handles patterns like:
+            app.method = function() {}
+            obj.prop = () => {}
+            module.exports.foo = function() {}
+
+        Args:
+            node: Expression statement node.
+            source_bytes: Original source code as bytes.
+
+        Returns:
+            Symbol if it's a function assignment, None otherwise.
+        """
+        # Find the assignment expression
+        assign_node = self._find_child(node, "assignment_expression")
+        if not assign_node:
+            return None
+
+        # Get left side (should be member_expression) and right side (function)
+        left_node = None
+        right_node = None
+        for child in assign_node.children:
+            if child.type == "member_expression":
+                left_node = child
+            elif child.type in ("function_expression", "arrow_function", "function"):
+                right_node = child
+
+        if not left_node or not right_node:
+            return None
+
+        # Extract method name from property_identifier
+        name = None
+        for child in left_node.children:
+            if child.type == "property_identifier":
+                name = self._get_node_text(child, source_bytes)
+                break
+
+        # Fallback to named function expression if available
+        if not name and right_node.type in ("function_expression", "function"):
+            name_node = self._find_child(right_node, "identifier")
+            if name_node:
+                name = self._get_node_text(name_node, source_bytes)
+
+        if not name:
+            return None
+
+        # Determine if async
+        is_async = any(c.type == "async" for c in right_node.children)
+        symbol_type = "async_function" if is_async else "function"
+
+        # Get signature
+        if right_node.type == "arrow_function":
+            signature = self._get_arrow_signature(right_node, source_bytes)
+        else:
+            signature = self._get_function_signature(right_node, source_bytes)
+
+        return Symbol(
+            name=name,
+            type=symbol_type,
+            lines=(node.start_point[0] + 1, node.end_point[0] + 1),
+            signature=signature,
+            docstring=self._get_preceding_comment(node, source_bytes),
+        )
 
     def _get_function_signature(self, node: "Node", source_bytes: bytes) -> str:
         """Extract function signature from a function/method node.
