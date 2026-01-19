@@ -4,13 +4,13 @@
 
 ## Current Status
 
-**Supported Languages (16):**
+**Supported Languages (18):**
 - Python (stdlib ast)
 - TypeScript, JavaScript (tree-sitter)
-- Kotlin, Swift (tree-sitter)
+- Kotlin, Swift, Dart (tree-sitter)
 - Go, Java, C#, Rust (tree-sitter)
 - C, C++ (tree-sitter)
-- PHP (tree-sitter)
+- PHP, SQL (tree-sitter)
 - HTML, CSS (tree-sitter)
 - Markdown, YAML (custom parsers)
 
@@ -39,7 +39,7 @@ Languages ranked by combined popularity from [TIOBE Index](https://www.tiobe.com
 
 | Rank | Language | TIOBE 2025 | Stack Overflow | Status | Package |
 |------|----------|------------|----------------|--------|---------|
-| 11 | SQL | - | #4 (52%) | ⏳ Planned | tree-sitter-sql |
+| 11 | SQL | - | #4 (52%) | ✅ Done | tree-sitter-sql |
 | 12 | HTML | - | #2 (54%) | ✅ Done | tree-sitter-html |
 | 13 | CSS/SCSS | - | #6 (42%) | ✅ Done | tree-sitter-css |
 | 14 | Bash/Shell | - | #7 (33%) | ⏳ Planned | tree-sitter-bash |
@@ -47,7 +47,7 @@ Languages ranked by combined popularity from [TIOBE Index](https://www.tiobe.com
 | 16 | Kotlin | #15 | #15 (9%) | ✅ Done | tree-sitter-kotlin |
 | 17 | Swift | #16 | #16 (6%) | ✅ Done | tree-sitter-swift |
 | 18 | Lua | #26 | #21 (4%) | ⏳ Planned | tree-sitter-lua |
-| 19 | Dart | #20 | #18 (6%) | ⏳ Planned | tree-sitter-dart |
+| 19 | Dart | #20 | #18 (6%) | ✅ Done | tree-sitter-dart |
 | 20 | R | #10 | #22 (4%) | ⏳ Planned | tree-sitter-r |
 | 21 | Scala | #28 | #24 (3%) | ⏳ Planned | tree-sitter-scala |
 | 22 | Perl | #11 | #26 (2%) | ⏳ Planned | tree-sitter-perl |
@@ -55,7 +55,7 @@ Languages ranked by combined popularity from [TIOBE Index](https://www.tiobe.com
 | 24 | Elixir | #40 | #28 (3%) | ⏳ Planned | tree-sitter-elixir |
 | 25 | Haskell | #29 | #29 (2%) | ⏳ Planned | tree-sitter-haskell |
 
-**Tier 2 Completion: 4/15 (27%)**
+**Tier 2 Completion: 6/15 (40%)**
 
 ### Tier 3: Medium Priority (Config/Data Languages)
 
@@ -127,11 +127,10 @@ Symbols: class, id, selector, pseudo, media, keyframe
 File extensions: .css
 ```
 
-**SQL Parser**
+**SQL Parser** ✅
 ```
-Symbols: table, view, function, procedure, trigger
+Symbols: table, view, materialized_view, index, function, trigger, type, sequence, schema, database, column
 File extensions: .sql
-Complexity: Medium (dialect variations)
 ```
 
 ### Phase 3: Shell & DevOps
@@ -206,10 +205,10 @@ Instead of individual packages, consider using [tree-sitter-language-pack](https
 | Tier | Total | Done | Remaining | Completion |
 |------|-------|------|-----------|------------|
 | Tier 1 (Critical) | 10 | 10 | 0 | 100% ✅ |
-| Tier 2 (High Priority) | 15 | 4 | 11 | 27% |
+| Tier 2 (High Priority) | 15 | 6 | 9 | 40% |
 | Tier 3 (Config/Data) | 8 | 0 | 8 | 0% |
 | Tier 4 (Emerging) | 10 | 0 | 10 | 0% |
-| **Total** | **43** | **14** | **29** | **33%** |
+| **Total** | **43** | **16** | **27** | **37%** |
 
 ---
 
@@ -220,7 +219,7 @@ Instead of individual packages, consider using [tree-sitter-language-pack](https
 3. [x] Implement PHP parser (Tier 1) ✅
 4. [x] Add HTML parser (Tier 2) ✅
 5. [x] Add CSS parser (Tier 2) ✅
-6. [ ] Add Dart parser (Tier 2) - Mobile dev priority
-7. [ ] Add SQL parser (Tier 2) - Database queries
+6. [x] Add Dart parser (Tier 2) - Mobile dev priority ✅
+7. [x] Add SQL parser (Tier 2) - Database queries ✅
 8. [ ] Add Bash parser (Tier 2) - DevOps scripts
 9. [ ] Evaluate tree-sitter-language-pack vs individual packages

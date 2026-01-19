@@ -137,6 +137,7 @@ Extract only these symbol types:
 - **CSS**: `class` (.selector), `id` (#selector), `selector` (element), `pseudo` (:root), `media` (@media), `keyframe` (@keyframes)
 - **Markdown**: `section` (H2), `subsection` (H3), `subsubsection` (H4)
 - **YAML**: `key`, `section` (nested mappings), `list`, `item`
+- **SQL**: `table`, `view`, `materialized_view`, `index`, `function`, `trigger`, `type`, `sequence`, `schema`, `database`, `column`
 
 Skip:
 - Variables/constants (too noisy)
@@ -220,6 +221,7 @@ Default include:
 **/*.md
 **/*.yaml
 **/*.yml
+**/*.sql
 ```
 
 Default exclude:
@@ -313,6 +315,9 @@ tree-sitter-cpp>=0.21
 tree-sitter-html>=0.23
 tree-sitter-css>=0.23
 
+# For SQL parsing
+tree-sitter-sql>=0.3
+
 # Dev
 pytest>=7.0
 ```
@@ -345,7 +350,7 @@ codemap watch . &                   # Start watch mode (auto-updates index)
 ```
 
 ### Supported Languages
-Python, TypeScript, JavaScript, Kotlin, Swift, Go, Java, C#, Rust, C, C++, PHP, Dart, HTML, CSS, Markdown, YAML
+Python, TypeScript, JavaScript, Kotlin, Swift, Go, Java, C#, Rust, C, C++, PHP, Dart, SQL, HTML, CSS, Markdown, YAML
 
 ### Workflow
 1. **Start watch mode**: `codemap watch . &` (run once per session)

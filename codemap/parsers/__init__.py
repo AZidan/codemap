@@ -91,6 +91,12 @@ try:
 except ImportError:
     DartParser = None
 
+try:
+    from .sql_parser import SQLParser
+    __all__.append("SQLParser")
+except ImportError:
+    SQLParser = None
+
 
 def get_available_parsers() -> list[type[Parser]]:
     """Return list of all available parser classes."""
@@ -124,6 +130,8 @@ def get_available_parsers() -> list[type[Parser]]:
         parsers.append(PHPParser)
     if DartParser:
         parsers.append(DartParser)
+    if SQLParser:
+        parsers.append(SQLParser)
 
     return parsers
 
