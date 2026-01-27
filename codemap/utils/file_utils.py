@@ -66,22 +66,74 @@ def should_exclude(filepath: str, patterns: list[str] | None = None) -> bool:
     if patterns is None:
         patterns = DEFAULT_EXCLUDE_PATTERNS
 
+    # Normalize path separators
+    filepath = filepath.replace("\\", "/")
+
     for pattern in patterns:
-        if fnmatch.fnmatch(filepath, pattern):
+        # Normalize pattern separators
+        pattern = pattern.replace("\\", "/")
+
+        if _match_glob_pattern(filepath, pattern):
             return True
-        # Also check if any parent directory matches
-        if "**" in pattern:
-            # Handle ** patterns
-            simple_pattern = pattern.replace("**", "*")
-            if fnmatch.fnmatch(filepath, simple_pattern):
-                return True
-        # Check path components
-        parts = filepath.split("/")
-        for part in parts:
-            # Check if directory name matches common excludes
-            if part in ("node_modules", "__pycache__", ".venv", "venv", "dist", "build", ".git"):
-                return True
+
     return False
+
+
+def _match_glob_pattern(filepath: str, pattern: str) -> bool:
+    """Match a filepath against a glob pattern with ** support.
+
+    Args:
+        filepath: Relative file path (e.g., 'src/utils/helper.py')
+        pattern: Glob pattern (e.g., '**/.venv/**', '**/node_modules/**')
+
+    Returns:
+        True if the filepath matches the pattern.
+    """
+    # Simple fnmatch patterns (no **)
+    if "**" not in pattern:
+        return fnmatch.fnmatch(filepath, pattern)
+
+    # Handle ** patterns
+    # Split pattern into parts
+    pattern_parts = pattern.split("/")
+    path_parts = filepath.split("/")
+
+    return _match_parts(path_parts, pattern_parts)
+
+
+def _match_parts(path_parts: list[str], pattern_parts: list[str]) -> bool:
+    """Recursively match path parts against pattern parts.
+
+    Args:
+        path_parts: List of path components
+        pattern_parts: List of pattern components
+
+    Returns:
+        True if parts match.
+    """
+    if not pattern_parts:
+        return not path_parts
+
+    if not path_parts:
+        # Check if remaining pattern is all ** or empty
+        return all(p == "**" for p in pattern_parts)
+
+    pattern_part = pattern_parts[0]
+
+    if pattern_part == "**":
+        # ** can match zero or more path components
+        # Try matching zero components (skip **)
+        if _match_parts(path_parts, pattern_parts[1:]):
+            return True
+        # Try matching one component and continue with **
+        if _match_parts(path_parts[1:], pattern_parts):
+            return True
+        return False
+    else:
+        # Regular pattern part - must match current path part
+        if fnmatch.fnmatch(path_parts[0], pattern_part):
+            return _match_parts(path_parts[1:], pattern_parts[1:])
+        return False
 
 
 def _get_extensions_for_languages(languages: list[str]) -> list[str]:
