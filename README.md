@@ -425,7 +425,13 @@ Language support is intentionally modular and extensible.
 
 ## Configuration
 
-Create a `.codemaprc` file in your project root:
+### Automatic .gitignore Support
+
+CodeMap automatically respects your `.gitignore` file. Patterns from `.gitignore` are applied during indexing, so directories like `node_modules/`, `.venv/`, and `dist/` are excluded without any configuration.
+
+### Custom Configuration
+
+Create a `.codemaprc` file in your project root for additional options:
 
 ```yaml
 # Languages to index
@@ -435,19 +441,18 @@ languages:
   - javascript
   - php
 
-# Patterns to exclude
+# Additional patterns to exclude (on top of .gitignore)
 exclude:
-  - "**/node_modules/**"
-  - "**/__pycache__/**"
-  - "**/dist/**"
-  - "**/build/**"
-  - "**/.venv/**"
   - "**/migrations/**"
+  - "**/fixtures/**"
 
 # Patterns to include (optional)
 include:
   - "src/**"
   - "lib/**"
+
+# Disable .gitignore support if needed (default: true)
+respect_gitignore: false
 
 # Truncate long docstrings
 max_docstring_length: 150
