@@ -122,6 +122,48 @@ class Indexer:
         except ImportError:
             logger.debug("PHP parser not available (tree-sitter-php not installed)")
 
+        # C# parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.csharp_parser import CSharpParser
+            self._parsers["csharp"] = CSharpParser()
+        except ImportError:
+            logger.debug("C# parser not available (tree-sitter-c-sharp not installed)")
+
+        # Dart parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.dart_parser import DartParser
+            self._parsers["dart"] = DartParser()
+        except ImportError:
+            logger.debug("Dart parser not available (tree-sitter-language-pack not installed)")
+
+        # Go parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.go_parser import GoParser
+            self._parsers["go"] = GoParser()
+        except ImportError:
+            logger.debug("Go parser not available (tree-sitter-go not installed)")
+
+        # Java parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.java_parser import JavaParser
+            self._parsers["java"] = JavaParser()
+        except ImportError:
+            logger.debug("Java parser not available (tree-sitter-java not installed)")
+
+        # Rust parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.rust_parser import RustParser
+            self._parsers["rust"] = RustParser()
+        except ImportError:
+            logger.debug("Rust parser not available (tree-sitter-rust not installed)")
+
+        # SQL parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.sql_parser import SQLParser
+            self._parsers["sql"] = SQLParser()
+        except ImportError:
+            logger.debug("SQL parser not available (tree-sitter-sql not installed)")
+
     @classmethod
     def load_existing(cls, root: Path | None = None) -> "Indexer":
         """Load an existing codemap and create an indexer.

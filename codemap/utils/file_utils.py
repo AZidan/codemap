@@ -158,6 +158,12 @@ def _get_extensions_for_languages(languages: list[str]) -> list[str]:
         "html": [".html", ".htm"],
         "css": [".css"],
         "php": [".php", ".phtml"],
+        "csharp": [".cs"],
+        "dart": [".dart"],
+        "go": [".go"],
+        "java": [".java"],
+        "rust": [".rs"],
+        "sql": [".sql"],
     }
 
     extensions = []
@@ -221,5 +227,11 @@ def get_language(filepath: Path) -> str | None:
         ".css": "css",
         ".php": "php",
         ".phtml": "php",
+        ".cs": "csharp",
+        ".dart": "dart",
+        ".go": "go",
+        ".java": "java",
+        ".rs": "rust",
+        ".sql": "sql",
     }
     return extension_to_lang.get(suffix)
