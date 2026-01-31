@@ -43,6 +43,9 @@ htmlcov/
 .codemap.json
 **/.codemap.json
 
+# Package manager lockfiles
+uv.lock
+
 # OS
 .DS_Store
 Thumbs.db

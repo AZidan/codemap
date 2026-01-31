@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator, Optional
 
+from difflib import SequenceMatcher
+
 from ..parsers.base import Symbol
 
 
@@ -394,7 +396,7 @@ class MapStore:
         """
         results = []
         query_lower = query.lower()
-        query_words = set(query_lower.split())
+        query_words = set(query_lower.replace("-", " ").replace("_", " ").split())
 
         for directory in self.manifest.directories:
             dir_map = self._load_dir_map(directory)
@@ -407,15 +409,12 @@ class MapStore:
                 # Search filenames (only with --fuzzy to preserve backward compat)
                 file_score = self._match_score(query_lower, query_words, filename.lower(), fuzzy)
                 if file_score > 0 and symbol_type is None and fuzzy:
-                    last_line = 1
-                    if entry.symbols:
-                        last_line = entry.symbols[-1].lines[1]
                     results.append(
                         {
                             "file": filepath,
                             "name": filename,
                             "type": "file",
-                            "lines": [1, last_line],
+                            "lines": [1, entry.lines],
                             "signature": None,
                             "docstring": None,
                             "_score": file_score,
@@ -435,14 +434,9 @@ class MapStore:
                         )
                     )
 
-        # Sort by score descending
+        # Sort by score descending, then strip internal score field
         results.sort(key=lambda r: r.get("_score", 0), reverse=True)
-
-        # Strip internal score field
-        for r in results:
-            r.pop("_score", None)
-
-        return results
+        return [{k: v for k, v in r.items() if k != "_score"} for r in results]
 
     def _search_symbol(
         self,
@@ -544,8 +538,6 @@ class MapStore:
             return 0.0
 
         # Fuzzy similarity via difflib (stdlib, zero dependencies)
-        from difflib import SequenceMatcher
-
         sim = SequenceMatcher(None, query, target).ratio()
         if sim >= 0.55:
             return sim * 0.6  # Scale so fuzzy never outranks exact/substring
