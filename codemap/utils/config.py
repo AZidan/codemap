@@ -35,6 +35,12 @@ DEFAULT_INCLUDE_PATTERNS = [
     "**/*.css",
     "**/*.php",
     "**/*.phtml",
+    "**/*.cs",      # C#
+    "**/*.dart",    # Dart
+    "**/*.go",      # Go
+    "**/*.java",    # Java
+    "**/*.rs",      # Rust
+    "**/*.sql",     # SQL
 ]
 
 DEFAULT_EXCLUDE_PATTERNS = [
@@ -57,7 +63,7 @@ DEFAULT_EXCLUDE_PATTERNS = [
 class Config:
     """CodeMap configuration."""
 
-    languages: list[str] = field(default_factory=lambda: ["python", "typescript", "javascript", "markdown", "yaml", "kotlin", "swift", "c", "cpp", "html", "css", "php"])
+    languages: list[str] = field(default_factory=lambda: ["python", "typescript", "javascript", "markdown", "yaml", "kotlin", "swift", "c", "cpp", "html", "css", "php", "csharp", "dart", "go", "java", "rust", "sql"])
     exclude_patterns: list[str] = field(default_factory=lambda: DEFAULT_EXCLUDE_PATTERNS.copy())
     include_patterns: list[str] = field(default_factory=lambda: DEFAULT_INCLUDE_PATTERNS.copy())
     max_docstring_length: int = 150
