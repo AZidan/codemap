@@ -33,6 +33,10 @@ codemap find "handle" --type method
 codemap find "User" --type class
 codemap find "Config" --type interface
 
+# Fuzzy search (word matching, typo tolerance, docstring search)
+codemap find "user service" --fuzzy
+codemap find "pricng" --fuzzy           # Handles typos
+
 # Show file structure with all symbols
 codemap show path/to/file.ts
 
@@ -147,9 +151,10 @@ codemap install-hooks
 ## Best Practices
 
 1. **Search before scanning**: Always try `codemap find` before grep/glob
-2. **Use line ranges**: Read specific line ranges instead of full files
-3. **Check freshness**: Use `codemap validate` before trusting cached line numbers
-4. **Explore structure first**: Use `codemap show` to understand file layout before diving in
+2. **Use `--fuzzy` when exact search fails**: If `codemap find` returns nothing, retry with `--fuzzy` for broader matching
+3. **Use line ranges**: Read specific line ranges instead of full files
+4. **Check freshness**: Use `codemap validate` before trusting cached line numbers
+5. **Explore structure first**: Use `codemap show` to understand file layout before diving in
 
 ## Example Session
 
@@ -170,4 +175,9 @@ codemap show src/auth/handlers.ts
 # 4. If you need related code, find it
 codemap find "validateToken"
 # → src/auth/utils.ts:12-38 [function] validateToken
+
+# 5. If exact search misses, try fuzzy
+codemap find "auth middleware" --fuzzy
+# → src/auth/middleware.ts [file]
+# → src/auth/handlers.ts:10-25 [function] authenticateRequest
 ```
