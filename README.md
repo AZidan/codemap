@@ -186,6 +186,23 @@ src/services/user.py:15-89 [class] UserService
 src/services/user.py:20-45 [method] process_request
 ```
 
+#### Fuzzy Search
+
+Use `--fuzzy` (`-f`) for broader matching when exact/substring search isn't enough. Fuzzy search adds:
+
+- **Word-level matching** — splits on spaces, hyphens, and underscores
+- **Filename matching** — searches file names in addition to symbols
+- **Docstring matching** — searches symbol documentation
+- **Typo tolerance** — finds close matches using similarity scoring
+
+Results are ranked by match quality (exact > substring > word overlap > fuzzy similarity).
+
+```bash
+codemap find "user service" --fuzzy     # Word-level match
+codemap find "pricng" --fuzzy           # Typo tolerance
+codemap find "monetization" --fuzzy     # Search docstrings
+```
+
 ### `codemap show FILE`
 
 Display file structure with symbols and line ranges.
