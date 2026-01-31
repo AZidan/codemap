@@ -172,7 +172,59 @@ def get_available_parsers() -> list[type[Parser]]:
     return parsers
 ```
 
-### Step 6: Create Test Fixture
+### Step 6: Wire Up Integration Points
+
+Three files must be updated so the new parser is used during indexing and file discovery:
+
+#### 6a. `codemap/core/indexer.py` — Initialize the parser
+
+Add to `_init_parsers()`:
+
+```python
+# <Language> parser (optional, requires tree-sitter)
+try:
+    from ..parsers.<language>_parser import <Language>Parser
+    self._parsers["<language>"] = <Language>Parser()
+except ImportError:
+    logger.debug("<Language> parser not available (tree-sitter-<language> not installed)")
+```
+
+#### 6b. `codemap/utils/config.py` — Add to defaults
+
+Add the language to the `Config.languages` default list:
+
+```python
+languages: list[str] = field(default_factory=lambda: [
+    ..., "<language>"
+])
+```
+
+Add the file extension(s) to `DEFAULT_INCLUDE_PATTERNS`:
+
+```python
+DEFAULT_INCLUDE_PATTERNS = [
+    ...,
+    "**/*.<ext>",  # <Language>
+]
+```
+
+#### 6c. `codemap/utils/file_utils.py` — Add extension mappings
+
+Add to `_get_extensions_for_languages()` `extension_map`:
+
+```python
+"<language>": [".<ext>"],
+```
+
+Add to `get_language()` `extension_to_lang`:
+
+```python
+".<ext>": "<language>",
+```
+
+> **Warning:** Skipping these steps means the parser exists but files are silently ignored during indexing. See [issue #16](https://github.com/AZidan/codemap/issues/16).
+
+### Step 7: Create Test Fixture
 
 Create `codemap/tests/fixtures/sample_module.<ext>`:
 
@@ -185,7 +237,7 @@ Create `codemap/tests/fixtures/sample_module.<ext>`:
 // - Edge cases
 ```
 
-### Step 7: Write Tests
+### Step 8: Write Tests
 
 Create `codemap/tests/test_<language>_parser.py`:
 
@@ -235,7 +287,7 @@ class Test<Language>Parser:
         assert parser.language == "<language>"
 ```
 
-### Step 8: Run Tests
+### Step 9: Run Tests
 
 ```bash
 # Run specific parser tests
@@ -245,14 +297,14 @@ pytest codemap/tests/test_<language>_parser.py -v
 pytest -q
 ```
 
-### Step 9: Update Documentation
+### Step 10: Update Documentation
 
 Update `docs/plans/language-support-roadmap.md`:
 - Mark language as ✅ Done in the appropriate tier
 - Update completion percentages
 - Update "Next Actions" section
 
-### Step 10: Commit and Create PR
+### Step 11: Commit and Create PR
 
 ```bash
 # Stage only relevant files
@@ -360,6 +412,9 @@ Before submitting PR:
 - [ ] `extensions` class attribute defined
 - [ ] `language` class attribute defined
 - [ ] Parser registered in `__init__.py`
+- [ ] Parser initialized in `indexer.py` `_init_parsers()`
+- [ ] Language added to `config.py` default languages and include patterns
+- [ ] Extension mappings added to `file_utils.py` (`_get_extensions_for_languages` and `get_language`)
 - [ ] Test fixture created with representative code
 - [ ] Tests cover all major symbol types
 - [ ] All tests pass (`pytest -q`)
