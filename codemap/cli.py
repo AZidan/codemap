@@ -24,12 +24,14 @@ def cli():
 @cli.command()
 @click.argument("path", default=".", type=click.Path(exists=True))
 @click.option(
-    "--lang", "-l",
+    "--lang",
+    "-l",
     multiple=True,
     help="Languages to index (python, typescript, javascript)",
 )
 @click.option(
-    "--exclude", "-e",
+    "--exclude",
+    "-e",
     multiple=True,
     help="Additional patterns to exclude",
 )
@@ -112,19 +114,27 @@ def update(filepath: str | None, update_all: bool):
 @cli.command()
 @click.argument("query")
 @click.option("--type", "-t", "symbol_type", help="Filter by type (class, function, method)")
-def find(query: str, symbol_type: str | None):
+@click.option(
+    "--fuzzy", "-f", is_flag=True, help="Enable fuzzy matching (word overlap + similarity)"
+)
+def find(query: str, symbol_type: str | None, fuzzy: bool):
     """Find a symbol in the codebase.
 
     Searches for symbols matching the query string (case-insensitive).
+    Use --fuzzy for word-level and similarity-based matching.
     """
     from .core.map_store import MapStore
 
     try:
         store = MapStore.load()
-        results = store.find_symbol(query, symbol_type=symbol_type)
+        results = store.find_symbol(query, symbol_type=symbol_type, fuzzy=fuzzy)
 
         if not results:
-            click.echo(f"No symbols found matching '{query}'")
+            if not fuzzy:
+                click.echo(f"No symbols found matching '{query}'")
+                click.echo(click.style("Tip: try --fuzzy for broader matching", fg="yellow"))
+            else:
+                click.echo(f"No symbols found matching '{query}' (even with fuzzy search)")
             return
 
         for result in results:
@@ -303,7 +313,9 @@ def lines(range_spec: str):
         if is_valid:
             click.echo(click.style(f"Lines {start}-{end} in {filepath} are valid", fg="green"))
         else:
-            click.echo(click.style(f"File {filepath} has changed - line range may be stale", fg="yellow"))
+            click.echo(
+                click.style(f"File {filepath} has changed - line range may be stale", fg="yellow")
+            )
             click.echo("Run 'codemap update' to refresh the index")
 
     except FileNotFoundError:
@@ -320,13 +332,15 @@ def lines(range_spec: str):
 @cli.command()
 @click.argument("path", default=".", type=click.Path(exists=True))
 @click.option(
-    "--debounce", "-d",
+    "--debounce",
+    "-d",
     default=0.5,
     type=float,
     help="Debounce time in seconds (default: 0.5)",
 )
 @click.option(
-    "--quiet", "-q",
+    "--quiet",
+    "-q",
     is_flag=True,
     help="Only show errors, not updates",
 )
@@ -374,16 +388,12 @@ def watch(path: str, debounce: float, quiet: bool):
                     f"({symbols_changed} symbols changed)"
                 )
             else:
-                click.echo(
-                    f"[{timestamp}] "
-                    f"{click.style('Updated', fg='green')} {filepath}"
-                )
+                click.echo(f"[{timestamp}] " f"{click.style('Updated', fg='green')} {filepath}")
 
     def on_error(filepath: str, error: Exception) -> None:
         timestamp = datetime.now().strftime("%H:%M:%S")
         click.echo(
-            f"[{timestamp}] "
-            f"{click.style('Error', fg='red')} {filepath}: {error}",
+            f"[{timestamp}] " f"{click.style('Error', fg='red')} {filepath}: {error}",
             err=True,
         )
 
@@ -420,6 +430,7 @@ def watch(path: str, debounce: float, quiet: bool):
             try:
                 # Sleep in small intervals to check stop_event
                 import time
+
                 time.sleep(0.1)
             except KeyboardInterrupt:
                 break
@@ -448,8 +459,12 @@ def stats():
         click.echo(f"Generated: {manifest.generated_at}")
         click.echo(f"Indexed directories: {len(manifest.directories)}")
         click.echo()
-        click.echo(f"Total files: {click.style(str(manifest.stats.get('total_files', 0)), fg='green')}")
-        click.echo(f"Total symbols: {click.style(str(manifest.stats.get('total_symbols', 0)), fg='green')}")
+        click.echo(
+            f"Total files: {click.style(str(manifest.stats.get('total_files', 0)), fg='green')}"
+        )
+        click.echo(
+            f"Total symbols: {click.style(str(manifest.stats.get('total_symbols', 0)), fg='green')}"
+        )
 
         # Count by language
         lang_counts: dict[str, int] = {}

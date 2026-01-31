@@ -9,6 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator, Optional
 
+from difflib import SequenceMatcher
+
 from ..parsers.base import Symbol
 
 
@@ -379,42 +381,71 @@ class MapStore:
         self,
         query: str,
         symbol_type: Optional[str] = None,
+        fuzzy: bool = False,
     ) -> list[dict[str, Any]]:
         """Find symbols matching a query.
 
         Args:
-            query: Symbol name to search for (case-insensitive substring match).
+            query: Symbol name to search for.
             symbol_type: Optional filter by symbol type.
+            fuzzy: Enable fuzzy matching (word overlap + similarity scoring).
 
         Returns:
             List of matching results with file, name, type, and lines.
+            Results are sorted by match quality when fuzzy is enabled.
         """
         results = []
         query_lower = query.lower()
+        query_words = set(query_lower.replace("-", " ").replace("_", " ").split())
 
-        # Search through all indexed directories
         for directory in self.manifest.directories:
             dir_map = self._load_dir_map(directory)
             for filename, entry in dir_map.files.items():
-                # Reconstruct full relative path
                 if directory:
                     filepath = f"{directory}/{filename}"
                 else:
                     filepath = filename
 
-                for symbol in entry.symbols:
-                    results.extend(
-                        self._search_symbol(symbol, filepath, query_lower, symbol_type)
+                # Search filenames (only with --fuzzy to preserve backward compat)
+                file_score = self._match_score(query_lower, query_words, filename.lower(), fuzzy)
+                if file_score > 0 and symbol_type is None and fuzzy:
+                    results.append(
+                        {
+                            "file": filepath,
+                            "name": filename,
+                            "type": "file",
+                            "lines": [1, entry.lines],
+                            "signature": None,
+                            "docstring": None,
+                            "_score": file_score,
+                        }
                     )
 
-        return results
+                # Search symbols
+                for symbol in entry.symbols:
+                    results.extend(
+                        self._search_symbol(
+                            symbol,
+                            filepath,
+                            query_lower,
+                            query_words,
+                            symbol_type,
+                            fuzzy,
+                        )
+                    )
+
+        # Sort by score descending, then strip internal score field
+        results.sort(key=lambda r: r.get("_score", 0), reverse=True)
+        return [{k: v for k, v in r.items() if k != "_score"} for r in results]
 
     def _search_symbol(
         self,
         symbol: Symbol,
         filepath: str,
         query: str,
+        query_words: set[str],
         symbol_type: Optional[str],
+        fuzzy: bool = False,
     ) -> Iterator[dict[str, Any]]:
         """Search a symbol and its children.
 
@@ -422,13 +453,21 @@ class MapStore:
             symbol: Symbol to search.
             filepath: File containing the symbol.
             query: Lowercase query string.
+            query_words: Set of words in the query.
             symbol_type: Optional type filter.
+            fuzzy: Enable fuzzy matching.
 
         Yields:
             Matching result dictionaries.
         """
-        # Check if symbol matches
-        if query in symbol.name.lower():
+        score = self._match_score(query, query_words, symbol.name.lower(), fuzzy)
+
+        # Also check docstring for matches when fuzzy is enabled
+        if score == 0 and fuzzy and symbol.docstring:
+            doc_score = self._match_score(query, query_words, symbol.docstring.lower(), fuzzy)
+            score = doc_score * 0.7  # Docstring matches ranked lower
+
+        if score > 0:
             if symbol_type is None or symbol.type == symbol_type:
                 yield {
                     "file": filepath,
@@ -437,11 +476,73 @@ class MapStore:
                     "lines": list(symbol.lines),
                     "signature": symbol.signature,
                     "docstring": symbol.docstring,
+                    "_score": score,
                 }
 
         # Search children
         for child in symbol.children:
-            yield from self._search_symbol(child, filepath, query, symbol_type)
+            yield from self._search_symbol(
+                child,
+                filepath,
+                query,
+                query_words,
+                symbol_type,
+                fuzzy,
+            )
+
+    @staticmethod
+    def _match_score(
+        query: str,
+        query_words: set[str],
+        target: str,
+        fuzzy: bool,
+    ) -> float:
+        """Score how well a query matches a target string.
+
+        Scoring tiers:
+            1.0  - exact full match
+            0.9  - query is a substring of target
+            0.7  - all query words found in target
+            0.5  - some query words found in target (>= 50%)
+            0.3+ - fuzzy similarity (SequenceMatcher ratio, if enabled)
+
+        Args:
+            query: Lowercase query string.
+            query_words: Set of words in the query.
+            target: Lowercase target string to match against.
+            fuzzy: Enable fuzzy similarity scoring.
+
+        Returns:
+            Score between 0.0 and 1.0. 0.0 means no match.
+        """
+        # Exact match
+        if query == target:
+            return 1.0
+
+        # Substring match (preserves original behavior)
+        if query in target:
+            return 0.9
+
+        # Word-level matching (split on spaces, hyphens, underscores)
+        target_words = set(target.replace("-", " ").replace("_", " ").split())
+        if query_words and target_words:
+            overlap = query_words & target_words
+            if overlap:
+                ratio = len(overlap) / len(query_words)
+                if ratio >= 1.0:
+                    return 0.7  # All query words found
+                elif ratio >= 0.5:
+                    return 0.5  # At least half
+
+        if not fuzzy:
+            return 0.0
+
+        # Fuzzy similarity via difflib (stdlib, zero dependencies)
+        sim = SequenceMatcher(None, query, target).ratio()
+        if sim >= 0.55:
+            return sim * 0.6  # Scale so fuzzy never outranks exact/substring
+
+        return 0.0
 
     def update_stats(self) -> None:
         """Update the stats section of the manifest."""

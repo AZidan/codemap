@@ -21,9 +21,7 @@ class TestMapStore:
             hash="abc123def456",
             language="python",
             lines=10,
-            symbols=[
-                Symbol(name="func", type="function", lines=(1, 5))
-            ],
+            symbols=[Symbol(name="func", type="function", lines=(1, 5))],
         )
         store.update_stats()
         store.save()
@@ -39,9 +37,12 @@ class TestMapStore:
         store = MapStore(tmp_path)
 
         symbols = [
-            Symbol(name="MyClass", type="class", lines=(1, 20), children=[
-                Symbol(name="method", type="method", lines=(5, 10))
-            ])
+            Symbol(
+                name="MyClass",
+                type="class",
+                lines=(1, 20),
+                children=[Symbol(name="method", type="method", lines=(5, 10))],
+            )
         ]
 
         store.update_file(
@@ -115,10 +116,15 @@ class TestMapStore:
             "python",
             50,
             [
-                Symbol(name="UserService", type="class", lines=(1, 30), children=[
-                    Symbol(name="get_user", type="method", lines=(5, 15)),
-                    Symbol(name="create_user", type="method", lines=(17, 25)),
-                ])
+                Symbol(
+                    name="UserService",
+                    type="class",
+                    lines=(1, 30),
+                    children=[
+                        Symbol(name="get_user", type="method", lines=(5, 15)),
+                        Symbol(name="create_user", type="method", lines=(17, 25)),
+                    ],
+                )
             ],
         )
         store.save()
@@ -204,14 +210,23 @@ class TestMapStore:
     def test_update_stats(self, tmp_path: Path):
         store = MapStore(tmp_path)
 
-        store.update_file("file1.py", "h1", "python", 10, [
-            Symbol(name="f1", type="function", lines=(1, 5))
-        ])
-        store.update_file("src/file2.py", "h2", "python", 20, [
-            Symbol(name="C1", type="class", lines=(1, 15), children=[
-                Symbol(name="m1", type="method", lines=(3, 10))
-            ])
-        ])
+        store.update_file(
+            "file1.py", "h1", "python", 10, [Symbol(name="f1", type="function", lines=(1, 5))]
+        )
+        store.update_file(
+            "src/file2.py",
+            "h2",
+            "python",
+            20,
+            [
+                Symbol(
+                    name="C1",
+                    type="class",
+                    lines=(1, 15),
+                    children=[Symbol(name="m1", type="method", lines=(3, 10))],
+                )
+            ],
+        )
 
         store.update_stats()
 
@@ -360,9 +375,7 @@ class TestSymbol:
             "type": "function",
             "lines": [5, 15],
             "signature": "(x: int) -> str",
-            "children": [
-                {"name": "nested", "type": "class", "lines": [7, 12]}
-            ],
+            "children": [{"name": "nested", "type": "class", "lines": [7, 12]}],
         }
         sym = Symbol.from_dict(data)
 
@@ -370,3 +383,189 @@ class TestSymbol:
         assert sym.lines == (5, 15)
         assert len(sym.children) == 1
         assert sym.children[0].name == "nested"
+
+
+class TestFuzzySearch:
+    """Tests for fuzzy search functionality."""
+
+    def _make_store(self, tmp_path: Path) -> MapStore:
+        """Create a store with sample data for fuzzy search testing."""
+        store = MapStore(tmp_path)
+        store.update_file(
+            "docs/pricing-strategy.md",
+            "hash1",
+            "markdown",
+            100,
+            [
+                Symbol(
+                    name="Pricing Restructure",
+                    type="section",
+                    lines=(1, 50),
+                    docstring="How to restructure the monetization model",
+                ),
+                Symbol(
+                    name="Revenue Projections",
+                    type="section",
+                    lines=(51, 100),
+                ),
+            ],
+        )
+        store.update_file(
+            "linkedin-openclaw-post.md",
+            "hash2",
+            "markdown",
+            40,
+            [
+                Symbol(name="Post body", type="section", lines=(1, 30)),
+                Symbol(name="Suggested subreddits", type="section", lines=(31, 40)),
+            ],
+        )
+        store.update_file(
+            "src/user_service.py",
+            "hash3",
+            "python",
+            80,
+            [
+                Symbol(
+                    name="UserService",
+                    type="class",
+                    lines=(1, 80),
+                    children=[
+                        Symbol(name="get_user", type="method", lines=(10, 30)),
+                        Symbol(name="create_user", type="method", lines=(32, 60)),
+                    ],
+                ),
+            ],
+        )
+        store.save()
+        return store
+
+    def test_exact_match_unchanged(self, tmp_path: Path):
+        """Existing exact/substring behavior should not change."""
+        store = self._make_store(tmp_path)
+        results = store.find_symbol("Pricing")
+        assert len(results) == 1
+        assert results[0]["name"] == "Pricing Restructure"
+
+    def test_substring_match_unchanged(self, tmp_path: Path):
+        """Substring matching should work without --fuzzy."""
+        store = self._make_store(tmp_path)
+        results = store.find_symbol("user")
+        assert len(results) == 3  # UserService, get_user, create_user
+
+    def test_no_filename_match_without_fuzzy(self, tmp_path: Path):
+        """Filenames should NOT be returned without fuzzy flag."""
+        store = self._make_store(tmp_path)
+        results = store.find_symbol("linkedin")
+        # "linkedin" is not in any symbol name, only in filename
+        assert len(results) == 0
+
+    def test_filename_match_with_fuzzy(self, tmp_path: Path):
+        """Filenames should be returned with fuzzy flag."""
+        store = self._make_store(tmp_path)
+        results = store.find_symbol("linkedin", fuzzy=True)
+        assert any(r["type"] == "file" for r in results)
+        assert any("linkedin" in r["name"].lower() for r in results)
+
+    def test_fuzzy_word_overlap(self, tmp_path: Path):
+        """Word-level matching should work with fuzzy."""
+        store = self._make_store(tmp_path)
+        # "pricing" is a word in "pricing-strategy.md" filename
+        results = store.find_symbol("pricing", fuzzy=True)
+        # Should find both the symbol AND the file
+        names = [r["name"] for r in results]
+        assert "Pricing Restructure" in names
+
+    def test_fuzzy_docstring_match(self, tmp_path: Path):
+        """Docstring content should be searchable with fuzzy."""
+        store = self._make_store(tmp_path)
+        results = store.find_symbol("monetization", fuzzy=True)
+        # "monetization" appears in the docstring of "Pricing Restructure"
+        assert len(results) >= 1
+        assert results[0]["name"] == "Pricing Restructure"
+
+    def test_fuzzy_no_junk_results(self, tmp_path: Path):
+        """Completely unrelated queries should return nothing."""
+        store = self._make_store(tmp_path)
+        results = store.find_symbol("xylophone", fuzzy=True)
+        assert len(results) == 0
+
+    def test_results_sorted_by_quality(self, tmp_path: Path):
+        """Exact matches should rank above fuzzy matches."""
+        store = self._make_store(tmp_path)
+        results = store.find_symbol("user", fuzzy=True)
+        # All three symbols contain "user" as substring — high score
+        # Filename matches (if any) should rank lower
+        assert len(results) >= 3
+        # First results should be the substring matches
+        substring_results = [r for r in results[:3] if "user" in r["name"].lower()]
+        assert len(substring_results) == 3
+
+    def test_type_filter_works_with_fuzzy(self, tmp_path: Path):
+        """Symbol type filter should still work with fuzzy enabled."""
+        store = self._make_store(tmp_path)
+        results = store.find_symbol("user", fuzzy=True, symbol_type="method")
+        assert all(r["type"] == "method" for r in results)
+        assert len(results) == 2  # get_user, create_user
+
+    def test_backward_compat_no_fuzzy_same_results(self, tmp_path: Path):
+        """Without fuzzy, results should be identical to old behavior."""
+        store = self._make_store(tmp_path)
+        # These should work exactly as before
+        results = store.find_symbol("Service")
+        assert len(results) == 1
+        assert results[0]["name"] == "UserService"
+
+
+class TestMatchScore:
+    """Tests for the _match_score static method."""
+
+    def test_exact_match(self):
+        score = MapStore._match_score("pricing", {"pricing"}, "pricing", False)
+        assert score == 1.0
+
+    def test_substring_match(self):
+        score = MapStore._match_score("pricing", {"pricing"}, "pricing restructure", False)
+        assert score == 0.9
+
+    def test_no_match_without_fuzzy(self):
+        score = MapStore._match_score("revenue", {"revenue"}, "pricing restructure", False)
+        assert score == 0.0
+
+    def test_word_overlap_all_words(self):
+        score = MapStore._match_score(
+            "user service", {"user", "service"}, "user-service-manager", False
+        )
+        assert score == 0.7
+
+    def test_word_overlap_partial(self):
+        score = MapStore._match_score(
+            "pricing revenue", {"pricing", "revenue"}, "pricing-restructure", False
+        )
+        assert score == 0.5  # 1 of 2 words found
+
+    def test_word_overlap_below_threshold(self):
+        score = MapStore._match_score("a b c d", {"a", "b", "c", "d"}, "only-a-here", False)
+        assert score == 0.0  # 1 of 4 = 25%, below 50% threshold
+
+    def test_hyphen_split_in_target(self):
+        score = MapStore._match_score("openclaw", {"openclaw"}, "linkedin-openclaw-post", False)
+        # "openclaw" is a substring of "linkedin-openclaw-post"
+        assert score == 0.9
+
+    def test_fuzzy_similar_strings(self):
+        score = MapStore._match_score("pricng", {"pricng"}, "pricing", True)
+        assert score > 0.0  # Typo should still fuzzy-match
+
+    def test_fuzzy_dissimilar_strings(self):
+        score = MapStore._match_score("xylophone", {"xylophone"}, "pricing", True)
+        assert score == 0.0
+
+    def test_fuzzy_disabled_no_similarity(self):
+        score = MapStore._match_score("pricng", {"pricng"}, "pricing", False)
+        assert score == 0.0  # Without fuzzy, typo doesn't match
+
+    def test_fuzzy_never_outranks_exact(self):
+        exact = MapStore._match_score("test", {"test"}, "test", True)
+        fuzzy = MapStore._match_score("tset", {"tset"}, "testing", True)
+        assert exact > fuzzy
