@@ -1,6 +1,6 @@
 [project]
 name = "codemap"
-version = "1.0.0"
+version = "1.1.0"
 description = "LLM-friendly codebase indexer - reduces token consumption by enabling targeted line-range reads"
 readme = "README.md"
 requires-python = ">=3.10"

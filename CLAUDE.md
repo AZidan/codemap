@@ -4,6 +4,29 @@
 
 You are building **CodeMap**, a CLI tool that generates structural indexes of codebases to reduce LLM token consumption. The tool creates a `.codemap/` directory that mirrors the project structure, enabling targeted line-range reads instead of full file reads.
 
+## Versioning (MANDATORY)
+
+**Every commit MUST include a version bump.** Update all three locations:
+1. `pyproject.toml` → `version = "X.Y.Z"`
+2. `codemap/__init__.py` → `__version__ = "X.Y.Z"`
+3. `codemap/tests/test_cli.py` → version assertion string
+
+Follow [Semantic Versioning](https://semver.org/):
+
+| Change Type | Bump | Example | When to use |
+|---|---|---|---|
+| **MAJOR** (X) | `1.0.0` → `2.0.0` | Breaking API/CLI changes, removed commands, changed output format | Backward-incompatible changes |
+| **MINOR** (Y) | `1.0.0` → `1.1.0` | New parser, new CLI command, new symbol type support | New features, backward-compatible |
+| **PATCH** (Z) | `1.1.0` → `1.1.1` | Bug fix, accuracy improvement, parser fix, typo fix | Fixes, no new features |
+
+**Examples:**
+- Adding a new language parser → **MINOR** bump
+- Fixing symbol misclassification → **PATCH** bump
+- New CLI command (e.g. `codemap diff`) → **MINOR** bump
+- Changing JSON output schema → **MAJOR** bump
+- Improving extraction accuracy → **PATCH** bump
+- Adding new symbol types to existing parser → **MINOR** bump
+
 ## Quick Start Commands
 
 ```bash
