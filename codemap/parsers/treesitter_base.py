@@ -47,6 +47,11 @@ class LanguageConfig:
     # Comment node types for docstring extraction
     comment_types: list[str] = field(default_factory=lambda: ["comment"])
 
+    # Node types that wrap declarations but aren't symbols themselves
+    # (e.g., namespace_declaration, declaration_list in C#)
+    # The parser will recursively traverse into these to find symbols.
+    container_types: list[str] = field(default_factory=list)
+
     # JSDoc-style comment prefix (e.g., "/**" for JS, "///" for C#)
     doc_comment_prefix: str | None = None
 
@@ -96,6 +101,10 @@ class TreeSitterParser(Parser):
             # Check for export wrappers
             elif child.type in self.config.export_wrappers:
                 symbols.extend(self._extract_from_wrapper(child, source_bytes))
+
+            # Recursively traverse container types (e.g., C# namespaces)
+            elif child.type in self.config.container_types:
+                symbols.extend(self._extract_symbols(child, source_bytes))
 
         return symbols
 
