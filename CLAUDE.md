@@ -26,11 +26,11 @@ codemap find "ClassName"
 
 This project has a `.codemap/` index. **Use CodeMap before scanning files.**
 
-### Start Watch Mode First
+### Start Watch Mode First (EVERY new session — do this immediately)
 ```bash
-codemap watch . &
+pgrep -f "codemap watch" > /dev/null || codemap watch . -q &
 ```
-This keeps the index automatically updated as files change. Run once at the start of each session.
+Auto-starts watch mode with a guard to prevent duplicates.
 
 ### Commands
 ```bash
@@ -333,11 +333,11 @@ pytest>=7.0
 
 This project has a `.codemap/` index for efficient code navigation. **Use CodeMap before scanning files.**
 
-### Start Watch Mode First
+### Start Watch Mode First (EVERY new session — do this immediately)
 ```bash
-codemap watch . &
+pgrep -f "codemap watch" > /dev/null || codemap watch . -q &
 ```
-This keeps the index automatically updated as files change. Run once at the start of each session.
+Auto-starts watch mode with a guard to prevent duplicates.
 
 ### Commands
 ```bash
