@@ -297,7 +297,35 @@ pytest codemap/tests/test_<language>_parser.py -v
 pytest -q
 ```
 
-### Step 10: Update Documentation
+### Step 10: Validate Against a Real Open Source Project
+
+**MANDATORY** — Unit tests with small snippets are not enough. Parsers must be validated against a real-world open source project to catch structural issues (e.g., namespace wrapping, module patterns) that don't appear in simple test cases.
+
+```bash
+# 1. Clone a popular open source project in the target language
+git clone <popular-project-url> /tmp/test-project
+
+# 2. Index it with codemap
+codemap init /tmp/test-project
+
+# 3. Check coverage — symbol count should be reasonable for the codebase size
+codemap stats
+
+# 4. Spot-check: pick a known class/function and verify it's found
+codemap find "KnownClassName"
+
+# 5. Compare: files with 0 symbols likely indicate a traversal gap
+codemap show /tmp/test-project/src/some_file.<ext>
+```
+
+**What to look for:**
+- Files indexed but with 0 symbols → parser isn't traversing into language-specific wrappers (namespaces, modules, packages)
+- Very low symbol-to-file ratio → likely missing `container_types` in the config
+- Missing nested symbols → `body_child` mapping may be wrong
+
+> **Why this matters:** Issue [#19](https://github.com/AZidan/codemap/issues/19) showed that C# had 0.8% symbol coverage because `namespace_declaration` nodes weren't being traversed. This was invisible in unit tests because test snippets didn't use namespaces. Real-world validation would have caught this immediately.
+
+### Step 11: Update Documentation
 
 Update `docs/plans/language-support-roadmap.md`:
 - Mark language as ✅ Done in the appropriate tier
@@ -342,6 +370,7 @@ gh pr create --base main --title "feat: Add <Language> parser support" --body ".
 | `grammar_module` | `str` | tree-sitter module name for dynamic import |
 | `node_mappings` | `dict[str, NodeMapping]` | Map of node types to extraction config |
 | `export_wrappers` | `list[str]` | Nodes containing exportable children |
+| `container_types` | `list[str]` | Nodes to recurse into (e.g., namespaces, declaration_list). Use when the language wraps declarations in non-symbol containers. |
 | `comment_types` | `list[str]` | Comment node types for docstrings |
 | `doc_comment_prefix` | `str` | Doc comment prefix (e.g., "/**", "///") |
 
@@ -418,6 +447,7 @@ Before submitting PR:
 - [ ] Test fixture created with representative code
 - [ ] Tests cover all major symbol types
 - [ ] All tests pass (`pytest -q`)
+- [ ] Validated against a real open source project (check symbol coverage)
 - [ ] Documentation updated
 - [ ] Follows git workflow (feature branch → PR → approval → merge)
 

@@ -17,6 +17,11 @@ CSHARP_CONFIG = LanguageConfig(
     name="csharp",
     extensions=[".cs"],
     grammar_module="c_sharp",
+    container_types=[
+        "namespace_declaration",              # namespace Foo { ... }
+        "file_scoped_namespace_declaration",  # namespace Foo; (C# 10+)
+        "declaration_list",                   # { ... } block containing declarations
+    ],
     node_mappings={
         "class_declaration": NodeMapping(
             symbol_type="class",
