@@ -26,7 +26,7 @@ struct User {
 
         assert len(symbols) == 1
         assert symbols[0].name == "User"
-        assert symbols[0].type == "class"
+        assert symbols[0].type == "struct"
 
     def test_parse_class(self, parser):
         source = '''
