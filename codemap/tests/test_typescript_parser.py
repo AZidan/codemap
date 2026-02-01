@@ -291,3 +291,96 @@ class Container<T> {
         assert len(symbols) == 1
         assert symbols[0].name == "Container"
         assert symbols[0].type == "class"
+
+    def test_parse_arrow_function_with_type_annotation(self, parser):
+        """Arrow function where the variable has a type annotation."""
+        source = '''
+const validate: Validator = (data) => { return true; };
+'''
+        symbols = parser.parse(source, "test.ts")
+        assert len(symbols) == 1
+        assert symbols[0].name == "validate"
+        assert symbols[0].type == "function"
+
+    def test_parse_var_arrow_function(self, parser):
+        """Arrow function declared with var."""
+        source = '''
+var oldStyle = (x: number) => x;
+'''
+        symbols = parser.parse(source, "test.ts")
+        assert len(symbols) == 1
+        assert symbols[0].name == "oldStyle"
+        assert symbols[0].type == "function"
+
+    def test_parse_abstract_class(self, parser):
+        """Abstract class with abstract methods."""
+        source = '''
+abstract class Base {
+    abstract compute(): number;
+    concrete(): string { return ""; }
+}
+'''
+        symbols = parser.parse(source, "test.ts")
+        assert len(symbols) == 1
+        cls = symbols[0]
+        assert cls.name == "Base"
+        assert cls.type == "class"
+        assert len(cls.children) == 2
+        names = {c.name for c in cls.children}
+        assert "compute" in names
+        assert "concrete" in names
+        for c in cls.children:
+            assert c.type == "method"
+
+    def test_parse_class_arrow_property(self, parser):
+        """Arrow function assigned to a class property."""
+        source = '''
+class Handler {
+    handle = (event: Event) => { };
+    asyncHandle = async (event: Event) => { };
+}
+'''
+        symbols = parser.parse(source, "test.ts")
+        assert len(symbols) == 1
+        cls = symbols[0]
+        assert len(cls.children) == 2
+        assert cls.children[0].name == "handle"
+        assert cls.children[0].type == "method"
+        assert cls.children[1].name == "asyncHandle"
+        assert cls.children[1].type == "async_method"
+
+    def test_parse_declare_module(self, parser):
+        """Symbols inside declare module blocks."""
+        source = '''
+declare module 'foo' {
+    export function bar(): void;
+    export class Baz {}
+}
+'''
+        symbols = parser.parse(source, "test.ts")
+        names = {s.name for s in symbols}
+        assert "bar" in names
+        assert "Baz" in names
+
+    def test_parse_declare_namespace(self, parser):
+        """Symbols inside declare namespace blocks."""
+        source = '''
+declare namespace NS {
+    function hello(): void;
+    interface Config { key: string; }
+}
+'''
+        symbols = parser.parse(source, "test.ts")
+        names = {s.name for s in symbols}
+        assert "hello" in names
+        assert "Config" in names
+
+    def test_parse_exported_arrow_function(self, parser):
+        """Exported arrow function."""
+        source = '''
+export const transform = async (x: any) => { return x; };
+'''
+        symbols = parser.parse(source, "test.ts")
+        assert len(symbols) == 1
+        assert symbols[0].name == "transform"
+        assert symbols[0].type == "async_function"
