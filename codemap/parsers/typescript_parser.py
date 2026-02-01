@@ -53,6 +53,9 @@ class TypeScriptParser(Parser):
         tree = parser.parse(source_bytes)
         return self._extract_symbols(tree.root_node, source_bytes)
 
+    # Node types that contain symbols but aren't symbols themselves.
+    _container_types = {"ambient_declaration", "internal_module", "module", "statement_block"}
+
     def _extract_symbols(self, node: "Node", source_bytes: bytes) -> list[Symbol]:
         """Extract symbols from tree-sitter AST.
 
@@ -66,14 +69,16 @@ class TypeScriptParser(Parser):
         symbols = []
 
         for child in node.children:
-            symbol = self._parse_node(child, source_bytes)
-            if symbol:
-                symbols.append(symbol)
-            # Handle export statements
+            parsed = self._parse_node(child, source_bytes)
+            if parsed:
+                symbols.extend(parsed) if isinstance(parsed, list) else symbols.append(parsed)
             elif child.type == "export_statement":
                 exported = self._parse_export(child, source_bytes)
                 if exported:
                     symbols.extend(exported)
+            elif child.type in self._container_types:
+                # Recurse into ambient declarations, namespaces, modules
+                symbols.extend(self._extract_symbols(child, source_bytes))
 
         return symbols
 
@@ -87,12 +92,11 @@ class TypeScriptParser(Parser):
         Returns:
             Symbol or None if not a recognized symbol type.
         """
-        if node.type == "class_declaration":
+        if node.type in ("class_declaration", "abstract_class_declaration"):
             return self._parse_class(node, source_bytes)
-        elif node.type == "function_declaration":
+        elif node.type in ("function_declaration", "function_signature"):
             return self._parse_function(node, source_bytes, "function")
-        elif node.type == "lexical_declaration":
-            # Handle const/let arrow functions
+        elif node.type in ("lexical_declaration", "variable_declaration"):
             return self._parse_lexical_declaration(node, source_bytes)
         elif node.type == "interface_declaration":
             return self._parse_interface(node, source_bytes)
@@ -114,9 +118,11 @@ class TypeScriptParser(Parser):
         """
         symbols = []
         for child in node.children:
-            symbol = self._parse_node(child, source_bytes)
-            if symbol:
-                symbols.append(symbol)
+            parsed = self._parse_node(child, source_bytes)
+            if parsed:
+                symbols.extend(parsed) if isinstance(parsed, list) else symbols.append(parsed)
+            elif child.type in self._container_types:
+                symbols.extend(self._extract_symbols(child, source_bytes))
         return symbols
 
     def _parse_class(self, node: "Node", source_bytes: bytes) -> Symbol:
@@ -161,9 +167,11 @@ class TypeScriptParser(Parser):
         """
         if node.type == "method_definition":
             return self._parse_method(node, source_bytes)
+        elif node.type == "abstract_method_signature":
+            return self._parse_abstract_method(node, source_bytes)
         elif node.type == "public_field_definition":
-            # Skip field definitions (too noisy)
-            return None
+            # Extract arrow functions assigned to class properties
+            return self._parse_field_arrow_function(node, source_bytes)
         return None
 
     def _parse_method(self, node: "Node", source_bytes: bytes) -> Symbol:
@@ -187,6 +195,37 @@ class TypeScriptParser(Parser):
 
         return Symbol(
             name=name,
+            type=symbol_type,
+            lines=(node.start_point[0] + 1, node.end_point[0] + 1),
+            signature=signature,
+            docstring=self._get_preceding_comment(node, source_bytes),
+        )
+
+    def _parse_abstract_method(self, node: "Node", source_bytes: bytes) -> Symbol:
+        """Parse an abstract method signature."""
+        name_node = self._find_child(node, "property_identifier")
+        name = self._get_node_text(name_node, source_bytes) if name_node else "<anonymous>"
+        signature = self._get_function_signature(node, source_bytes)
+        return Symbol(
+            name=name,
+            type="method",
+            lines=(node.start_point[0] + 1, node.end_point[0] + 1),
+            signature=signature,
+            docstring=self._get_preceding_comment(node, source_bytes),
+        )
+
+    def _parse_field_arrow_function(self, node: "Node", source_bytes: bytes) -> Optional[Symbol]:
+        """Parse a class field that is an arrow function."""
+        name_node = self._find_child(node, "property_identifier")
+        arrow_node = self._find_child(node, "arrow_function")
+        if not (name_node and arrow_node):
+            return None
+        name = self._get_node_text(name_node, source_bytes)
+        is_async = any(c.type == "async" for c in arrow_node.children)
+        symbol_type = "async_method" if is_async else "method"
+        signature = self._get_arrow_signature(arrow_node, source_bytes)
+        return Symbol(
+            name=name or "<anonymous>",
             type=symbol_type,
             lines=(node.start_point[0] + 1, node.end_point[0] + 1),
             signature=signature,
@@ -221,16 +260,17 @@ class TypeScriptParser(Parser):
             docstring=self._get_preceding_comment(node, source_bytes),
         )
 
-    def _parse_lexical_declaration(self, node: "Node", source_bytes: bytes) -> Optional[Symbol]:
-        """Parse a const/let declaration for arrow functions.
+    def _parse_lexical_declaration(self, node: "Node", source_bytes: bytes) -> list[Symbol]:
+        """Parse a const/let/var declaration for arrow functions.
 
         Args:
-            node: Lexical declaration node.
+            node: Lexical or variable declaration node.
             source_bytes: Original source code as bytes.
 
         Returns:
-            Symbol if it's a named arrow function, None otherwise.
+            List of Symbols for named arrow functions found.
         """
+        symbols = []
         for child in node.children:
             if child.type == "variable_declarator":
                 name_node = self._find_child(child, "identifier")
@@ -239,6 +279,12 @@ class TypeScriptParser(Parser):
                     if c.type == "arrow_function":
                         value_node = c
                         break
+                    # Handle: const fn: Type = () => {} (function_expression too)
+                    if c.type == "as_expression":
+                        for cc in c.children:
+                            if cc.type == "arrow_function":
+                                value_node = cc
+                                break
 
                 if name_node and value_node:
                     name = self._get_node_text(name_node, source_bytes)
@@ -247,14 +293,14 @@ class TypeScriptParser(Parser):
 
                     signature = self._get_arrow_signature(value_node, source_bytes)
 
-                    return Symbol(
+                    symbols.append(Symbol(
                         name=name or "<anonymous>",
                         type=symbol_type,
                         lines=(node.start_point[0] + 1, node.end_point[0] + 1),
                         signature=signature,
                         docstring=self._get_preceding_comment(node, source_bytes),
-                    )
-        return None
+                    ))
+        return symbols
 
     def _parse_interface(self, node: "Node", source_bytes: bytes) -> Symbol:
         """Parse an interface declaration.
