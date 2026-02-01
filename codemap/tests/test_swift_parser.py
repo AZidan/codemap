@@ -156,3 +156,56 @@ protocol Third {
     def test_language(self, parser):
         """Test that the parser reports the correct language."""
         assert parser.language == "swift"
+
+    def test_extension_methods_classified_as_methods(self, parser):
+        """Extension methods should be classified as methods, not functions."""
+        source = '''
+extension Foo {
+    func helper() {}
+    func another() -> Int { return 0 }
+}
+'''
+        symbols = parser.parse(source)
+        assert len(symbols) == 1
+        assert symbols[0].name == "Foo"
+        assert symbols[0].type == "class"
+        assert len(symbols[0].children) == 2
+        for child in symbols[0].children:
+            assert child.type == "method"
+
+    def test_preprocessor_directives_do_not_break_parsing(self, parser):
+        """#if/#endif directives should not cause methods to be misclassified."""
+        source = '''
+public class MyClass: Base {
+    func normalMethod() {}
+
+    #if canImport(Foundation)
+    func conditionalMethod() {}
+    #endif
+
+    func anotherMethod() {}
+}
+'''
+        symbols = parser.parse(source)
+        assert len(symbols) == 1
+        cls = symbols[0]
+        assert cls.name == "MyClass"
+        assert cls.type == "class"
+        # All functions inside the class should be methods
+        assert len(cls.children) == 3
+        for child in cls.children:
+            assert child.type == "method", f"{child.name} should be method, got {child.type}"
+
+    def test_enum_with_methods(self, parser):
+        """Enum methods should be classified as methods."""
+        source = '''
+enum Direction {
+    case north, south
+    func description() -> String { return "" }
+}
+'''
+        symbols = parser.parse(source)
+        assert len(symbols) == 1
+        assert symbols[0].type == "enum"
+        assert len(symbols[0].children) == 1
+        assert symbols[0].children[0].type == "method"

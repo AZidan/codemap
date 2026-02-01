@@ -2,16 +2,21 @@
 
 from __future__ import annotations
 
+import re
+
+from .base import Symbol
 from .treesitter_base import TreeSitterParser, LanguageConfig, NodeMapping
 
 
 def get_swift_class_type(node) -> str:
-    """Determine if a class_declaration is a class, struct, or enum."""
+    """Determine if a class_declaration is a class, struct, enum, or extension."""
     for child in node.children:
         if child.type == "enum":
             return "enum"
+        if child.type == "extension":
+            return "class"
         if child.type == "struct":
-            return "class"  # Treat structs as classes
+            return "class"
         if child.type == "class":
             return "class"
     return "class"
@@ -46,6 +51,9 @@ SWIFT_CONFIG = LanguageConfig(
 )
 
 
+_DIRECTIVE_RE = re.compile(r"^\s*#(if|else|elseif|endif)\b.*$", re.MULTILINE)
+
+
 class SwiftParser(TreeSitterParser):
     """Parser for Swift files using tree-sitter."""
 
@@ -53,16 +61,24 @@ class SwiftParser(TreeSitterParser):
     extensions = [".swift"]
     language = "swift"
 
+    def parse(self, source: str, filepath: str = "") -> list[Symbol]:
+        """Parse Swift source, stripping compiler directives that confuse tree-sitter."""
+        cleaned = _DIRECTIVE_RE.sub("", source)
+        return super().parse(cleaned, filepath)
+
     def _extract_symbol(self, node, source_bytes):
         """Override to handle enum detection and body type variations."""
         # Handle class_declaration which can be struct, class, or enum
         if node.type == "class_declaration":
             symbol_type = get_swift_class_type(node)
 
-            # Find the name
+            # Find the name (type_identifier for class/struct/enum, user_type for extension)
             name = ""
             for child in node.children:
                 if child.type == "type_identifier":
+                    name = source_bytes[child.start_byte:child.end_byte].decode("utf-8")
+                    break
+                if child.type == "user_type":
                     name = source_bytes[child.start_byte:child.end_byte].decode("utf-8")
                     break
 
@@ -79,7 +95,6 @@ class SwiftParser(TreeSitterParser):
                     children = self._extract_children(child, source_bytes)
                     break
 
-            from .base import Symbol
             return Symbol(
                 name=name,
                 type=symbol_type,
