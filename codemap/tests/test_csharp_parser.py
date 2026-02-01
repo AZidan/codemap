@@ -206,3 +206,77 @@ public enum UserStatus
         assert "User" in names
         assert "IUserService" in names
         assert "UserStatus" in names
+
+    def test_parse_namespace_wrapped_classes(self, parser):
+        """Test that classes inside namespaces are found."""
+        source = '''
+namespace MyApp.Models
+{
+    public class User
+    {
+        public int Id { get; set; }
+    }
+
+    public class Order
+    {
+        public int Total { get; set; }
+    }
+}
+'''
+        symbols = parser.parse(source)
+        assert len(symbols) == 2
+        names = [s.name for s in symbols]
+        assert "User" in names
+        assert "Order" in names
+
+    def test_parse_file_scoped_namespace(self, parser):
+        """Test file-scoped namespace (C# 10+)."""
+        source = '''
+namespace MyApp.Services;
+
+public class OrderService
+{
+    public void ProcessOrder(int orderId)
+    {
+    }
+}
+'''
+        symbols = parser.parse(source)
+        assert len(symbols) == 1
+        assert symbols[0].name == "OrderService"
+        assert len(symbols[0].children) == 1
+        assert symbols[0].children[0].name == "ProcessOrder"
+
+    def test_parse_nested_namespaces(self, parser):
+        """Test nested namespace declarations."""
+        source = '''
+namespace Outer
+{
+    namespace Inner
+    {
+        public class DeepClass
+        {
+            public void DeepMethod() {}
+        }
+    }
+}
+'''
+        symbols = parser.parse(source)
+        assert len(symbols) == 1
+        assert symbols[0].name == "DeepClass"
+
+    def test_parse_namespace_with_multiple_types(self, parser):
+        """Test namespace containing class, interface, enum, and struct."""
+        source = '''
+namespace MyApp
+{
+    public class MyClass {}
+    public interface IMyInterface {}
+    public enum MyEnum { A, B }
+    public struct MyStruct {}
+}
+'''
+        symbols = parser.parse(source)
+        assert len(symbols) == 4
+        types = {s.type for s in symbols}
+        assert types == {"class", "interface", "enum", "struct"}
