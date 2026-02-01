@@ -16,7 +16,7 @@ def get_swift_class_type(node) -> str:
         if child.type == "extension":
             return "class"
         if child.type == "struct":
-            return "class"
+            return "struct"
         if child.type == "class":
             return "class"
     return "class"
