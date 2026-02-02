@@ -37,6 +37,15 @@ C_CONFIG = LanguageConfig(
     },
     comment_types=["comment"],
     doc_comment_prefix="/*",
+    container_types=[
+        "preproc_ifdef",
+        "preproc_if",
+        "preproc_elif",
+        "preproc_else",
+        "preproc_function_def",
+        "linkage_specification",
+        "declaration_list",
+    ],
 )
 
 
