@@ -226,3 +226,112 @@ void print_point(struct Point p) {
         func = next(s for s in symbols if s.type == "function")
         assert func.name == "print_point"
         assert "struct Point p" in func.signature
+
+    def test_parse_header_with_include_guard(self, parser):
+        """Test that symbols inside #ifndef include guards are extracted."""
+        source = '''
+#ifndef MY_HEADER_H
+#define MY_HEADER_H
+
+typedef unsigned char byte;
+
+struct Point {
+    int x;
+    int y;
+};
+
+enum Status {
+    OK,
+    ERROR
+};
+
+static inline int add(int a, int b) {
+    return a + b;
+}
+
+#endif
+'''
+        symbols = parser.parse(source, "test.h")
+
+        names = [s.name for s in symbols]
+        assert "byte" in names
+        assert "Point" in names
+        assert "Status" in names
+        assert "add" in names
+        assert len(symbols) == 4
+
+    def test_parse_ifdef_else_blocks(self, parser):
+        """Test that symbols inside #ifdef/#else blocks are extracted."""
+        source = '''
+#ifdef WIN32
+int win_func(void) { return 1; }
+#else
+int unix_func(void) { return 2; }
+#endif
+'''
+        symbols = parser.parse(source)
+
+        names = [s.name for s in symbols]
+        assert "win_func" in names
+        assert "unix_func" in names
+
+    def test_parse_preproc_if_elif(self, parser):
+        """Test that symbols inside #if/#elif blocks are extracted."""
+        source = '''
+#if defined(DEBUG)
+void debug_log(const char *msg) { }
+#elif defined(VERBOSE)
+void verbose_log(const char *msg) { }
+#endif
+'''
+        symbols = parser.parse(source)
+
+        names = [s.name for s in symbols]
+        assert "debug_log" in names
+        assert "verbose_log" in names
+
+    def test_parse_mixed_preprocessor_and_toplevel(self, parser):
+        """Test files with both preprocessor-wrapped and top-level symbols."""
+        source = '''
+#include <stdio.h>
+
+int always_available(void) { return 1; }
+
+#ifdef FEATURE_X
+int feature_x_func(void) { return 2; }
+#endif
+
+struct Config {
+    int value;
+};
+'''
+        symbols = parser.parse(source)
+
+        names = [s.name for s in symbols]
+        assert "always_available" in names
+        assert "feature_x_func" in names
+        assert "Config" in names
+
+    def test_parse_typedef_with_embedded_enum_in_guard(self, parser):
+        """Test typedef with embedded enum inside include guard (jv.h pattern)."""
+        source = '''
+#ifndef JV_H
+#define JV_H
+
+typedef enum {
+    JV_KIND_INVALID,
+    JV_KIND_NULL,
+    JV_KIND_FALSE,
+} jv_kind;
+
+typedef struct {
+    unsigned char kind_flags;
+} jv;
+
+#endif
+'''
+        symbols = parser.parse(source)
+
+        names = [s.name for s in symbols]
+        assert "jv_kind" in names
+        assert "jv" in names
