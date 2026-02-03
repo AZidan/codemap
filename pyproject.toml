@@ -1,6 +1,6 @@
 [project]
 name = "codemap"
-version = "1.1.1"
+version = "1.2.0"
 description = "LLM-friendly codebase indexer - reduces token consumption by enabling targeted line-range reads"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -77,9 +77,13 @@ php = [
     "tree-sitter>=0.21",
     "tree-sitter-php>=0.23",
 ]
+ruby = [
+    "tree-sitter>=0.21",
+    "tree-sitter-ruby>=0.21",
+]
 # All languages bundle
 languages = [
-    "codemap[treesitter,go,java,csharp,rust,kotlin,swift,c,cpp,html,css,php]",
+    "codemap[treesitter,go,java,csharp,rust,kotlin,swift,c,cpp,html,css,php,ruby]",
 ]
 watch = [
     "watchdog>=3.0",

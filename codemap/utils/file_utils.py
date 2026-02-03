@@ -164,6 +164,7 @@ def _get_extensions_for_languages(languages: list[str]) -> list[str]:
         "java": [".java"],
         "rust": [".rs"],
         "sql": [".sql"],
+        "ruby": [".rb", ".rake", ".gemspec", ".ru", ".thor"],
     }
 
     extensions = []
@@ -233,5 +234,10 @@ def get_language(filepath: Path) -> str | None:
         ".java": "java",
         ".rs": "rust",
         ".sql": "sql",
+        ".rb": "ruby",
+        ".rake": "ruby",
+        ".gemspec": "ruby",
+        ".ru": "ruby",
+        ".thor": "ruby",
     }
     return extension_to_lang.get(suffix)

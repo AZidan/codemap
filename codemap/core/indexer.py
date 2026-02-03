@@ -164,6 +164,13 @@ class Indexer:
         except ImportError:
             logger.debug("SQL parser not available (tree-sitter-sql not installed)")
 
+        # Ruby parser (optional, requires tree-sitter)
+        try:
+            from ..parsers.ruby_parser import RubyParser
+            self._parsers["ruby"] = RubyParser()
+        except ImportError:
+            logger.debug("Ruby parser not available (tree-sitter-ruby not installed)")
+
     @classmethod
     def load_existing(cls, root: Path | None = None) -> "Indexer":
         """Load an existing codemap and create an indexer.
