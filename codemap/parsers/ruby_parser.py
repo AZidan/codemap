@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 from .base import Symbol
 from .treesitter_base import TreeSitterParser, LanguageConfig, NodeMapping
 
@@ -58,30 +56,9 @@ class RubyParser(TreeSitterParser):
             if child.type in self.config.node_mappings:
                 symbol = self._extract_symbol(child, source_bytes)
                 if symbol:
-                    # Convert function to method if inside a class
-                    if symbol.type == "function":
-                        symbol = Symbol(
-                            name=symbol.name,
-                            type="method",
-                            lines=symbol.lines,
-                            signature=symbol.signature,
-                            docstring=symbol.docstring,
-                            children=symbol.children,
-                        )
-                    elif symbol.type == "async_function":
-                        symbol = Symbol(
-                            name=symbol.name,
-                            type="async_method",
-                            lines=symbol.lines,
-                            signature=symbol.signature,
-                            docstring=symbol.docstring,
-                            children=symbol.children,
-                        )
                     children.append(symbol)
-            # Handle class << self blocks - extract methods as singleton_methods
             elif child.type == "singleton_class":
-                singleton_children = self._extract_singleton_class_methods(child, source_bytes)
-                children.extend(singleton_children)
+                children.extend(self._extract_singleton_class_methods(child, source_bytes))
         return children
 
     def _extract_singleton_class_methods(self, node, source_bytes: bytes) -> list[Symbol]:
