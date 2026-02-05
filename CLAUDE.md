@@ -156,6 +156,7 @@ Extract only these symbol types:
 - **C++**: `class`, `struct`, `function`, `method`, `namespace`, `enum`, `template`
 - **PHP**: `class`, `interface`, `trait`, `enum`, `function`, `method`
 - **Dart**: `class`, `enum`, `mixin`, `extension`, `function`, `method`, `constructor`, `getter`, `setter`
+- **Ruby**: `module`, `class`, `method`, `singleton_method`
 - **HTML**: `element` (semantic: header, nav, main, section, article, aside, footer, form), `id` (elements with id attribute)
 - **CSS**: `class` (.selector), `id` (#selector), `selector` (element), `pseudo` (:root), `media` (@media), `keyframe` (@keyframes)
 - **Markdown**: `section` (H2), `subsection` (H3), `subsubsection` (H4)
@@ -245,6 +246,9 @@ Default include:
 **/*.yaml
 **/*.yml
 **/*.sql
+**/*.rb
+**/*.rake
+**/*.gemspec
 ```
 
 Default exclude:
