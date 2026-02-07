@@ -264,11 +264,11 @@ class Indexer:
             logger.warning(f"Syntax error in {filepath}: {e}")
             symbols = []
 
-        # Get relative path
+        # Get relative path (always use forward slashes for consistency)
         try:
-            rel_path = str(filepath.relative_to(self.root))
+            rel_path = filepath.relative_to(self.root).as_posix()
         except ValueError:
-            rel_path = str(filepath)
+            rel_path = filepath.as_posix()
 
         # Update map store
         self.map_store.update_file(
@@ -312,9 +312,9 @@ class Indexer:
         if not filepath.exists():
             # File was deleted, remove from index
             try:
-                rel_path = str(filepath.relative_to(self.root))
+                rel_path = filepath.relative_to(self.root).as_posix()
             except ValueError:
-                rel_path = str(filepath)
+                rel_path = filepath.as_posix()
 
             removed = self.map_store.remove_file(rel_path)
             self.map_store.update_stats()
@@ -328,7 +328,7 @@ class Indexer:
         # Re-index the file
         try:
             old_entry = self.map_store.get_file(
-                str(filepath.relative_to(self.root))
+                filepath.relative_to(self.root).as_posix()
             )
             old_symbol_count = 0
             if old_entry:
@@ -407,9 +407,9 @@ class Indexer:
         """
         filepath = Path(filepath)
         try:
-            rel_path = str(filepath.relative_to(self.root))
+            rel_path = filepath.relative_to(self.root).as_posix()
         except ValueError:
-            rel_path = str(filepath)
+            rel_path = filepath.as_posix()
 
         entry = self.map_store.get_file(rel_path)
         if not entry:
