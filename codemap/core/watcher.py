@@ -72,7 +72,7 @@ class CodemapEventHandler(FileSystemEventHandler):
 
             # Skip .codemap directory
             try:
-                rel_path = str(filepath.relative_to(self.root))
+                rel_path = filepath.relative_to(self.root).as_posix()
             except ValueError:
                 return False
 
@@ -145,7 +145,7 @@ class CodemapEventHandler(FileSystemEventHandler):
             filepath = Path(event.src_path)
             if get_language(filepath) is not None:
                 try:
-                    rel_path = str(filepath.relative_to(self.root))
+                    rel_path = filepath.relative_to(self.root).as_posix()
                     # Skip .codemap directory
                     if rel_path.startswith(".codemap"):
                         return
@@ -162,7 +162,7 @@ class CodemapEventHandler(FileSystemEventHandler):
             src_path = Path(event.src_path)
             if get_language(src_path) is not None:
                 try:
-                    rel_path = str(src_path.relative_to(self.root))
+                    rel_path = src_path.relative_to(self.root).as_posix()
                     # Skip .codemap directory
                     if rel_path.startswith(".codemap"):
                         return
@@ -229,9 +229,9 @@ class CodeMapWatcher:
             event_type: Type of change.
         """
         try:
-            rel_path = str(filepath.relative_to(self.root))
+            rel_path = filepath.relative_to(self.root).as_posix()
         except ValueError:
-            rel_path = str(filepath)
+            rel_path = filepath.as_posix()
 
         try:
             if event_type == "deleted":

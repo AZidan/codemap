@@ -156,28 +156,96 @@ def find(query: str, symbol_type: str | None, fuzzy: bool):
 
 
 @cli.command()
-@click.argument("filepath")
-def show(filepath: str):
-    """Show structure of a file.
+@click.argument("filepaths", nargs=-1, required=True)
+def show(filepaths: tuple[str, ...]):
+    """Show structure of one or more files.
 
-    Displays all symbols in the file with their line numbers and types.
+    Displays all symbols in the file(s) with their line numbers and types.
+
+    Supports shell-expanded globs (e.g., codemap show src/*.py) and
+    quoted glob patterns (e.g., codemap show "**/*.py").
+
+    \b
+    Examples:
+        codemap show main.py                 # Single file
+        codemap show src/*.py lib/*.py       # Shell-expanded globs
+        codemap show "**/*.py"               # Quoted glob pattern
     """
     from .core.map_store import MapStore
+    from .utils.file_utils import is_glob_pattern, match_files_to_pattern
 
     try:
         store = MapStore.load()
-        structure = store.get_file_structure(filepath)
 
-        if not structure:
-            click.echo(f"File not indexed: {filepath}")
-            click.echo("Run 'codemap update' to index it.")
-            return
+        # Collect all files to show
+        files_to_show: list[str] = []
 
-        click.echo(f"File: {click.style(filepath, fg='blue')} (hash: {structure['hash']})")
-        click.echo(f"Lines: {structure['lines']}")
-        click.echo(f"Language: {structure['language']}")
-        click.echo("\nSymbols:")
-        _print_symbols(structure["symbols"], indent=0)
+        for filepath in filepaths:
+            if is_glob_pattern(filepath):
+                # It's a quoted glob pattern - match against indexed files
+                indexed_paths = (rel_path for rel_path, _ in store.get_all_files())
+                matches = match_files_to_pattern(indexed_paths, filepath)
+                if matches:
+                    files_to_show.extend(matches)
+                else:
+                    click.echo(
+                        click.style(f"No indexed files match pattern: {filepath}", fg="yellow"),
+                        err=True,
+                    )
+            else:
+                # It's a literal file path (possibly from shell expansion)
+                # Normalize path separators for cross-platform consistency
+                files_to_show.append(filepath.replace("\\", "/"))
+
+        if not files_to_show:
+            click.echo("No files to show.", err=True)
+            sys.exit(1)
+
+        # Remove duplicates while preserving order
+        seen: set[str] = set()
+        unique_files: list[str] = []
+        for f in files_to_show:
+            if f not in seen:
+                seen.add(f)
+                unique_files.append(f)
+
+        # Track statistics for summary
+        shown_count = 0
+        not_indexed_files: list[str] = []
+
+        for filepath in unique_files:
+            structure = store.get_file_structure(filepath)
+
+            if not structure:
+                not_indexed_files.append(filepath)
+                continue
+
+            # Add separator between files (but not before the first one)
+            if shown_count > 0:
+                click.echo()
+                click.echo("-" * 60)
+                click.echo()
+
+            click.echo(f"File: {click.style(filepath, fg='blue')} (hash: {structure['hash']})")
+            click.echo(f"Lines: {structure['lines']}")
+            click.echo(f"Language: {structure['language']}")
+            click.echo("\nSymbols:")
+            _print_symbols(structure["symbols"], indent=0)
+            shown_count += 1
+
+        # Show summary if multiple files or any not indexed
+        if len(unique_files) > 1 or not_indexed_files:
+            click.echo()
+            click.echo("-" * 60)
+            if shown_count > 0:
+                click.echo(f"Showed {shown_count} file(s)")
+            if not_indexed_files:
+                click.echo(click.style(f"Not indexed ({len(not_indexed_files)}):", fg="yellow"))
+                for f in not_indexed_files[:5]:
+                    click.echo(f"  - {f}")
+                if len(not_indexed_files) > 5:
+                    click.echo(f"  ... and {len(not_indexed_files) - 5} more")
+                click.echo("Run 'codemap update' to index them.")
 
     except FileNotFoundError:
         click.echo(click.style("No codemap found. Run 'codemap init' first.", fg="red"), err=True)

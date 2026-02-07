@@ -122,7 +122,65 @@ def helper(x: int) -> str:
         runner.invoke(cli, ["init", "."])
         result = runner.invoke(cli, ["show", "nonexistent.py"])
 
-        assert "not indexed" in result.output
+        assert "Not indexed" in result.output
+
+    def test_show_multiple_files(self, runner, sample_project, monkeypatch):
+        """Test show command with multiple files (shell-expanded globs)."""
+        monkeypatch.chdir(sample_project)
+        runner.invoke(cli, ["init", "."])
+        result = runner.invoke(cli, ["show", "main.py", "utils.py"])
+
+        assert result.exit_code == 0
+        assert "main.py" in result.output
+        assert "utils.py" in result.output
+        assert "Showed 2 file(s)" in result.output
+
+    def test_show_glob_pattern(self, runner, sample_project, monkeypatch):
+        """Test show command with quoted glob pattern."""
+        monkeypatch.chdir(sample_project)
+        runner.invoke(cli, ["init", "."])
+        result = runner.invoke(cli, ["show", "*.py"])
+
+        assert result.exit_code == 0
+        assert "main.py" in result.output
+        assert "utils.py" in result.output
+        assert "Showed 2 file(s)" in result.output
+
+    def test_show_no_match_pattern(self, runner, sample_project, monkeypatch):
+        """Test show command when glob pattern matches nothing."""
+        monkeypatch.chdir(sample_project)
+        runner.invoke(cli, ["init", "."])
+        result = runner.invoke(cli, ["show", "**/*.ts"])
+
+        assert result.exit_code == 1
+        assert "No indexed files match" in result.output
+
+    def test_show_mixed_indexed_and_not(self, runner, sample_project, monkeypatch):
+        """Test show with mix of indexed and non-indexed files."""
+        monkeypatch.chdir(sample_project)
+        runner.invoke(cli, ["init", "."])
+        result = runner.invoke(cli, ["show", "main.py", "nonexistent.py"])
+
+        assert result.exit_code == 0
+        assert "main.py" in result.output
+        assert "Not indexed" in result.output
+        assert "nonexistent.py" in result.output
+
+    def test_show_nested_glob_pattern(self, runner, tmp_path, monkeypatch):
+        """Test show with ** recursive glob pattern."""
+        (tmp_path / "src").mkdir()
+        (tmp_path / "src" / "deep").mkdir()
+        (tmp_path / "src" / "main.py").write_text("def main(): pass")
+        (tmp_path / "src" / "deep" / "utils.py").write_text("def util(): pass")
+
+        monkeypatch.chdir(tmp_path)
+        runner.invoke(cli, ["init", "."])
+        result = runner.invoke(cli, ["show", "**/*.py"])
+
+        assert result.exit_code == 0
+        assert "main.py" in result.output
+        assert "utils.py" in result.output
+        assert "Showed 2 file(s)" in result.output
 
     def test_validate_command_fresh(self, runner, sample_project, monkeypatch):
         monkeypatch.chdir(sample_project)
@@ -169,7 +227,7 @@ def new_function():
     def test_version_flag(self, runner):
         result = runner.invoke(cli, ["--version"])
         assert result.exit_code == 0
-        assert "1.2.0" in result.output
+        assert "1.3.0" in result.output
 
     def test_init_with_language_filter(self, runner, tmp_path, monkeypatch):
         # Create files of different types

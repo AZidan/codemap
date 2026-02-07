@@ -136,6 +136,44 @@ def _match_parts(path_parts: list[str], pattern_parts: list[str]) -> bool:
         return False
 
 
+def is_glob_pattern(path: str) -> bool:
+    """Check if a path string contains glob pattern characters.
+
+    Args:
+        path: Path string to check.
+
+    Returns:
+        True if the path contains glob characters (* or ?).
+    """
+    return "*" in path or "?" in path
+
+
+def match_files_to_pattern(
+    indexed_files: Iterator[str],
+    pattern: str,
+) -> list[str]:
+    """Match indexed files against a glob pattern.
+
+    Args:
+        indexed_files: Iterator of relative file paths from the index.
+        pattern: Glob pattern to match (e.g., '**/*.py', 'src/*.ts').
+
+    Returns:
+        List of matching file paths, sorted alphabetically.
+    """
+    # Normalize pattern separators
+    pattern = pattern.replace("\\", "/")
+
+    matches = []
+    for filepath in indexed_files:
+        # Normalize filepath separators
+        normalized = filepath.replace("\\", "/")
+        if _match_glob_pattern(normalized, pattern):
+            matches.append(filepath)
+
+    return sorted(matches)
+
+
 def _get_extensions_for_languages(languages: list[str]) -> list[str]:
     """Get file extensions for given languages.
 

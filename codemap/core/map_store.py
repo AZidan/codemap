@@ -280,7 +280,7 @@ class MapStore:
         """
         # Determine which directory this file belongs to
         path = Path(rel_path)
-        directory = str(path.parent) if path.parent != Path(".") else ""
+        directory = path.parent.as_posix() if path.parent != Path(".") else ""
         filename = path.name
 
         # Load or create the directory map
@@ -309,7 +309,7 @@ class MapStore:
             True if file was removed, False if it didn't exist.
         """
         path = Path(rel_path)
-        directory = str(path.parent) if path.parent != Path(".") else ""
+        directory = path.parent.as_posix() if path.parent != Path(".") else ""
         filename = path.name
 
         dir_map = self._load_dir_map(directory)
@@ -345,7 +345,7 @@ class MapStore:
             FileEntry or None if not found.
         """
         path = Path(rel_path)
-        directory = str(path.parent) if path.parent != Path(".") else ""
+        directory = path.parent.as_posix() if path.parent != Path(".") else ""
         filename = path.name
 
         dir_map = self._load_dir_map(directory)
