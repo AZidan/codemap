@@ -351,6 +351,28 @@ See [plugin/README.md](plugin/README.md) for detailed documentation.
 
 ---
 
+## MCP server (experimental)
+
+Bring CodeMap into any **Model Context Protocol**–capable client (Cursor, Claude Desktop, …) without editor-specific plugins.
+
+Install the optional extra:
+
+```bash
+pip install "codemap[mcp] @ git+https://github.com/AZidan/codemap.git"
+```
+
+Run stdio transport (clients spawn this process):
+
+```bash
+codemap-mcp
+```
+
+- Set **`CODEMAP_WORKSPACE_ROOT`** when the MCP host does not start `codemap-mcp` with cwd at your repo root.
+- Server **`instructions`** ask assistants to poll `codemap_after_git_checkpoint` each user turn (honoring them is client-dependent).
+- External git hooks can drop **`.git/CURSOR_SUGGEST_CODEMAP_REFRESH`** after merge/rebase/checkout—`codemap_after_git_checkpoint` surfaces it (same pattern as optional Cursor/git-hook workflows).
+
+---
+
 ## Installation
 
 ### Claude Code (Recommended)
@@ -369,8 +391,11 @@ pip install git+https://github.com/AZidan/codemap.git
 # With TypeScript/JavaScript support
 pip install "codemap[treesitter] @ git+https://github.com/AZidan/codemap.git"
 
-# All languages + watch mode
+# All languages + watch mode + MCP stdio server
 pip install "codemap[all] @ git+https://github.com/AZidan/codemap.git"
+
+# MCP stdio server only (adds model-context-protocol Python SDK)
+pip install "codemap[mcp] @ git+https://github.com/AZidan/codemap.git"
 ```
 
 ### uv Install
@@ -657,7 +682,7 @@ codemap/
 Contributions welcome! Areas where help is needed:
 
 - **New language parsers** — Ruby, PHP, Scala
-- **MCP server mode** — For non-Claude tools
+- **MCP stdio server** — Experimental: `pip install codemap[mcp]`, run `codemap-mcp` (README section above). Further integration for non-Claude tools welcome.
 - **Fuzzy symbol search** — `codemap find "usr srv"` → `UserService`
 - **VSCode extension** — GUI for non-CLI users
 

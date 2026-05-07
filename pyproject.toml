@@ -88,6 +88,9 @@ languages = [
 watch = [
     "watchdog>=3.0",
 ]
+mcp = [
+    "mcp>=1.0,<2",
+]
 dev = [
     "pytest>=7.0",
     "pytest-cov",
@@ -95,11 +98,12 @@ dev = [
     "ruff",
 ]
 all = [
-    "codemap[languages,watch,dev]",
+    "codemap[languages,watch,dev,mcp]",
 ]
 
 [project.scripts]
 codemap = "codemap.cli:cli"
+codemap-mcp = "codemap.mcp.server:main"
 
 [build-system]
 requires = ["hatchling"]
