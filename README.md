@@ -351,6 +351,47 @@ See [plugin/README.md](plugin/README.md) for detailed documentation.
 
 ---
 
+## MCP server (experimental)
+
+Bring CodeMap into any **Model Context Protocol**–capable client (Cursor, Claude Desktop, …) without editor-specific plugins.
+
+Install the optional extra:
+
+```bash
+pip install "codemap[mcp] @ git+https://github.com/AZidan/codemap.git"
+```
+
+Run stdio transport (clients spawn this process):
+
+```bash
+codemap-mcp
+```
+
+- Set **`CODEMAP_WORKSPACE_ROOT`** when the MCP host does not start `codemap-mcp` with cwd at your repo root.
+- Server **`instructions`** ask assistants to poll `codemap_after_git_checkpoint` each user turn (honoring them is client-dependent).
+- External git hooks can drop **`.git/CURSOR_SUGGEST_CODEMAP_REFRESH`** after merge/rebase/checkout—`codemap_after_git_checkpoint` surfaces it (same pattern as optional Cursor/git-hook workflows).
+
+### Testing MCP (any client)
+
+From a project that already has **`codemap init`** (or an existing `.codemap/`):
+
+1. Point the client at **`codemap-mcp`** (stdio) and ensure **`PATH`** includes the `codemap` binary; set **`CODEMAP_WORKSPACE_ROOT`** if cwd ≠ repo root.
+2. Invoke tools in order: **`codemap_health`** → **`codemap_find`** → **`codemap_show`** on a path returned by `find`. Output should match **`codemap find` / `codemap show`** in a terminal from the **same** repo root.
+
+### “Plugin parity” in Cursor, Claude Desktop, etc.
+
+The **Claude Code plugin** *teaches* the agent to prefer **`codemap find` → scoped reads** (see [Claude Code Plugin](#-claude-code-plugin)). MCP alone only adds **tools** + **`instructions`**; clients do **not** have to obey those hints.
+
+| Client | How to get behavior closer to the official Claude Code plugin |
+|--------|------------------------------------------------------------------|
+| **Claude Code** | `claude plugin install codemap` and/or copy `.claude/skills/codemap` into the project |
+| **Cursor** | Project rules: `.cursor/rules/*.mdc` with **`alwaysApply: true`** (or `globs`) to prefer **`codemap_find` → `codemap_show`** before large **`read_file`** |
+| **Claude Desktop** | MCP server config + your own system / project instructions with the same workflow |
+
+**Example** (Cursor): add `.cursor/rules/codemap-navigation.mdc` with frontmatter `alwaysApply: true` and bullets: use **`codemap_find`** first, **`codemap_show`** for structure/line ranges, **`read_file`** only for missing lines or unindexed paths; offer **`codemap_validate` / `codemap_update`** after git churn. This is optional but matches how teams validate “CodeMap-first” traces in the agent UI.
+
+---
+
 ## Installation
 
 ### Claude Code (Recommended)
@@ -369,8 +410,11 @@ pip install git+https://github.com/AZidan/codemap.git
 # With TypeScript/JavaScript support
 pip install "codemap[treesitter] @ git+https://github.com/AZidan/codemap.git"
 
-# All languages + watch mode
+# All languages + watch mode + MCP stdio server
 pip install "codemap[all] @ git+https://github.com/AZidan/codemap.git"
+
+# MCP stdio server only (adds model-context-protocol Python SDK)
+pip install "codemap[mcp] @ git+https://github.com/AZidan/codemap.git"
 ```
 
 ### uv Install
@@ -657,7 +701,7 @@ codemap/
 Contributions welcome! Areas where help is needed:
 
 - **New language parsers** — Ruby, PHP, Scala
-- **MCP server mode** — For non-Claude tools
+- **MCP stdio server** — Experimental: `pip install codemap[mcp]`, run `codemap-mcp` (README section above). Further integration for non-Claude tools welcome.
 - **Fuzzy symbol search** — `codemap find "usr srv"` → `UserService`
 - **VSCode extension** — GUI for non-CLI users
 
