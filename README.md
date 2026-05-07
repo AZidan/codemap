@@ -371,6 +371,25 @@ codemap-mcp
 - Server **`instructions`** ask assistants to poll `codemap_after_git_checkpoint` each user turn (honoring them is client-dependent).
 - External git hooks can drop **`.git/CURSOR_SUGGEST_CODEMAP_REFRESH`** after merge/rebase/checkout—`codemap_after_git_checkpoint` surfaces it (same pattern as optional Cursor/git-hook workflows).
 
+### Testing MCP (any client)
+
+From a project that already has **`codemap init`** (or an existing `.codemap/`):
+
+1. Point the client at **`codemap-mcp`** (stdio) and ensure **`PATH`** includes the `codemap` binary; set **`CODEMAP_WORKSPACE_ROOT`** if cwd ≠ repo root.
+2. Invoke tools in order: **`codemap_health`** → **`codemap_find`** → **`codemap_show`** on a path returned by `find`. Output should match **`codemap find` / `codemap show`** in a terminal from the **same** repo root.
+
+### “Plugin parity” in Cursor, Claude Desktop, etc.
+
+The **Claude Code plugin** *teaches* the agent to prefer **`codemap find` → scoped reads** (see [Claude Code Plugin](#-claude-code-plugin)). MCP alone only adds **tools** + **`instructions`**; clients do **not** have to obey those hints.
+
+| Client | How to get behavior closer to the official Claude Code plugin |
+|--------|------------------------------------------------------------------|
+| **Claude Code** | `claude plugin install codemap` and/or copy `.claude/skills/codemap` into the project |
+| **Cursor** | Project rules: `.cursor/rules/*.mdc` with **`alwaysApply: true`** (or `globs`) to prefer **`codemap_find` → `codemap_show`** before large **`read_file`** |
+| **Claude Desktop** | MCP server config + your own system / project instructions with the same workflow |
+
+**Example** (Cursor): add `.cursor/rules/codemap-navigation.mdc` with frontmatter `alwaysApply: true` and bullets: use **`codemap_find`** first, **`codemap_show`** for structure/line ranges, **`read_file`** only for missing lines or unindexed paths; offer **`codemap_validate` / `codemap_update`** after git churn. This is optional but matches how teams validate “CodeMap-first” traces in the agent UI.
+
 ---
 
 ## Installation
