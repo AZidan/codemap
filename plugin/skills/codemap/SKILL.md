@@ -100,6 +100,8 @@ Symbols:
 | `interface` | TypeScript interface |
 | `type` | TypeScript type alias |
 | `enum` | Enum declaration |
+| `module` | Ruby module |
+| `singleton_method` | Ruby singleton/class method |
 | `key` | YAML key/section |
 | `section` | Markdown H2 header |
 | `subsection` | Markdown H3 header |

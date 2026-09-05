@@ -87,7 +87,7 @@ Now you can read just the specific method you need (e.g., lines 100-145 for `cre
 
 | Type | Description | Languages |
 |------|-------------|-----------|
-| `class` | Class declaration | Python, TS/JS, Kotlin, Swift, Java, C#, C++, Go (struct) |
+| `class` | Class declaration | Python, TS/JS, Kotlin, Swift, Java, C#, C++, Ruby, Go (struct) |
 | `function` | Function declaration | All languages |
 | `method` | Class/struct method | All languages |
 | `async_function` | Async function | Python, TS/JS |
@@ -98,6 +98,8 @@ Now you can read just the specific method you need (e.g., lines 100-145 for `cre
 | `struct` | Struct declaration | Swift, Go, C#, Rust, C, C++ |
 | `trait` | Trait declaration | Rust |
 | `object` | Object declaration | Kotlin |
+| `module` | Module declaration | Ruby |
+| `singleton_method` | Class/singleton method | Ruby |
 | `typedef` | Type definition | C |
 | `namespace` | Namespace declaration | C++ |
 | `template` | Template class/function | C++ |

@@ -4,13 +4,13 @@
 
 ## Current Status
 
-**Supported Languages (18):**
+**Supported Languages (19):**
 - Python (stdlib ast)
 - TypeScript, JavaScript (tree-sitter)
 - Kotlin, Swift, Dart (tree-sitter)
 - Go, Java, C#, Rust (tree-sitter)
 - C, C++ (tree-sitter)
-- PHP, SQL (tree-sitter)
+- PHP, Ruby, SQL (tree-sitter)
 - HTML, CSS (tree-sitter)
 - Markdown, YAML (custom parsers)
 
@@ -43,7 +43,7 @@ Languages ranked by combined popularity from [TIOBE Index](https://www.tiobe.com
 | 12 | HTML | - | #2 (54%) | ✅ Done | tree-sitter-html |
 | 13 | CSS/SCSS | - | #6 (42%) | ✅ Done | tree-sitter-css |
 | 14 | Bash/Shell | - | #7 (33%) | ⏳ Planned | tree-sitter-bash |
-| 15 | Ruby | #18 | #17 (6%) | ⏳ Planned | tree-sitter-ruby |
+| 15 | Ruby | #18 | #17 (6%) | ✅ Done | tree-sitter-ruby |
 | 16 | Kotlin | #15 | #15 (9%) | ✅ Done | tree-sitter-kotlin |
 | 17 | Swift | #16 | #16 (6%) | ✅ Done | tree-sitter-swift |
 | 18 | Lua | #26 | #21 (4%) | ⏳ Planned | tree-sitter-lua |
@@ -55,7 +55,7 @@ Languages ranked by combined popularity from [TIOBE Index](https://www.tiobe.com
 | 24 | Elixir | #40 | #28 (3%) | ⏳ Planned | tree-sitter-elixir |
 | 25 | Haskell | #29 | #29 (2%) | ⏳ Planned | tree-sitter-haskell |
 
-**Tier 2 Completion: 6/15 (40%)**
+**Tier 2 Completion: 7/15 (47%)**
 
 ### Tier 3: Medium Priority (Config/Data Languages)
 
@@ -133,6 +133,12 @@ Symbols: table, view, materialized_view, index, function, trigger, type, sequenc
 File extensions: .sql
 ```
 
+**Ruby Parser** ✅
+```
+Symbols: module, class, method, singleton_method
+File extensions: .rb, .rake, .gemspec, .ru, .thor
+```
+
 ### Phase 3: Shell & DevOps
 
 **Bash Parser**
@@ -205,10 +211,10 @@ Instead of individual packages, consider using [tree-sitter-language-pack](https
 | Tier | Total | Done | Remaining | Completion |
 |------|-------|------|-----------|------------|
 | Tier 1 (Critical) | 10 | 10 | 0 | 100% ✅ |
-| Tier 2 (High Priority) | 15 | 6 | 9 | 40% |
+| Tier 2 (High Priority) | 15 | 7 | 8 | 47% |
 | Tier 3 (Config/Data) | 8 | 0 | 8 | 0% |
 | Tier 4 (Emerging) | 10 | 0 | 10 | 0% |
-| **Total** | **43** | **16** | **27** | **37%** |
+| **Total** | **43** | **17** | **26** | **40%** |
 
 ---
 
@@ -221,5 +227,6 @@ Instead of individual packages, consider using [tree-sitter-language-pack](https
 5. [x] Add CSS parser (Tier 2) ✅
 6. [x] Add Dart parser (Tier 2) - Mobile dev priority ✅
 7. [x] Add SQL parser (Tier 2) - Database queries ✅
-8. [ ] Add Bash parser (Tier 2) - DevOps scripts
-9. [ ] Evaluate tree-sitter-language-pack vs individual packages
+8. [x] Add Ruby parser (Tier 2) - Rails/Ruby projects ✅
+9. [ ] Add Bash parser (Tier 2) - DevOps scripts
+10. [ ] Evaluate tree-sitter-language-pack vs individual packages

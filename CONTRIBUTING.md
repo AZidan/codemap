@@ -563,7 +563,6 @@ Looking for something to work on? Here are high-impact areas:
   - [ ] Rust  
   - [ ] Java
   - [ ] C#
-  - [ ] Ruby
   - [ ] PHP
 - **CLI improvements:**
   - [ ] JSON output format (`--json` flag)

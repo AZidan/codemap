@@ -103,6 +103,7 @@ codemap/
 │   ├── cpp_parser.py         # tree-sitter based
 │   ├── html_parser.py        # tree-sitter based
 │   ├── css_parser.py         # tree-sitter based
+│   ├── ruby_parser.py        # tree-sitter based
 │   ├── markdown_parser.py    # Regex-based H2/H3/H4 headers
 │   └── yaml_parser.py        # Recursive key hierarchy
 ├── hooks/
@@ -345,6 +346,9 @@ tree-sitter-css>=0.23
 # For SQL parsing
 tree-sitter-sql>=0.3
 
+# For Ruby parsing
+tree-sitter-ruby>=0.21
+
 # Dev
 pytest>=7.0
 ```
@@ -377,7 +381,7 @@ codemap watch . &                   # Start watch mode (auto-updates index)
 ```
 
 ### Supported Languages
-Python, TypeScript, JavaScript, Kotlin, Swift, Go, Java, C#, Rust, C, C++, PHP, Dart, SQL, HTML, CSS, Markdown, YAML
+Python, TypeScript, JavaScript, Kotlin, Swift, Go, Java, C#, Rust, C, C++, PHP, Dart, SQL, Ruby, HTML, CSS, Markdown, YAML
 
 ### Workflow
 1. **Start watch mode**: `codemap watch . &` (run once per session)

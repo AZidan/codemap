@@ -406,6 +406,7 @@ pip install -e ".[all]"
 | **Kotlin** | tree-sitter | see below | class, interface, function, method, object |
 | **Swift** | tree-sitter | see below | class, struct, protocol, enum, function, method |
 | **PHP** | tree-sitter | see below | class, interface, trait, enum, function, method |
+| **Ruby** | tree-sitter | see below | module, class, method, singleton_method |
 | **Go** | tree-sitter | see below | function, method, struct, interface, type |
 | **Java** | tree-sitter | see below | class, interface, enum, method |
 | **C#** | tree-sitter | see below | class, interface, struct, enum, method, property |
@@ -431,6 +432,7 @@ pip install "codemap[c] @ git+https://github.com/AZidan/codemap.git"           #
 pip install "codemap[cpp] @ git+https://github.com/AZidan/codemap.git"         # C++
 pip install "codemap[html] @ git+https://github.com/AZidan/codemap.git"        # HTML
 pip install "codemap[css] @ git+https://github.com/AZidan/codemap.git"         # CSS
+pip install "codemap[ruby] @ git+https://github.com/AZidan/codemap.git"        # Ruby
 
 # Install all languages
 pip install "codemap[languages] @ git+https://github.com/AZidan/codemap.git"
@@ -641,6 +643,7 @@ codemap/
 │   ├── cpp_parser.py      # C++ tree-sitter parser
 │   ├── html_parser.py     # HTML tree-sitter parser
 │   ├── css_parser.py      # CSS tree-sitter parser
+│   ├── ruby_parser.py     # Ruby tree-sitter parser
 │   ├── markdown_parser.py # Markdown regex parser
 │   └── yaml_parser.py     # YAML parser
 ├── hooks/
@@ -656,7 +659,7 @@ codemap/
 
 Contributions welcome! Areas where help is needed:
 
-- **New language parsers** — Ruby, PHP, Scala
+- **New language parsers** — PHP, Scala
 - **MCP server mode** — For non-Claude tools
 - **Fuzzy symbol search** — `codemap find "usr srv"` → `UserService`
 - **VSCode extension** — GUI for non-CLI users
