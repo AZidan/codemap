@@ -222,7 +222,7 @@ def new_function():
     def test_version_flag(self, runner):
         result = runner.invoke(cli, ["--version"])
         assert result.exit_code == 0
-        assert "1.3.0" in result.output
+        assert "1.3.1" in result.output
 
     def test_init_with_language_filter(self, runner, tmp_path, monkeypatch):
         # Create files of different types
