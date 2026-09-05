@@ -15,6 +15,8 @@ Navigate codebases efficiently using pre-built structural indexes stored in `.co
 - Finding where a class, function, method, or type is defined
 - Understanding a file's structure before reading it
 - Searching for symbols by name
+- Navigating YAML config files (keys, sections, nested structures)
+- Navigating Markdown docs (sections by H2/H3/H4 headers)
 - Reducing token usage during codebase exploration
 
 **READ full files when:**
@@ -37,8 +39,10 @@ codemap find "Config" --type interface
 codemap find "user service" --fuzzy
 codemap find "pricng" --fuzzy           # Handles typos
 
-# Show file structure with all symbols
+# Show file structure with all symbols (works with .ts, .yaml, .md, etc.)
 codemap show path/to/file.ts
+codemap show config.yaml
+codemap show docs/README.md
 
 # Check if index is up-to-date
 codemap validate
@@ -96,6 +100,10 @@ Symbols:
 | `interface` | TypeScript interface |
 | `type` | TypeScript type alias |
 | `enum` | Enum declaration |
+| `key` | YAML key/section |
+| `section` | Markdown H2 header |
+| `subsection` | Markdown H3 header |
+| `subsubsection` | Markdown H4 header |
 
 ## Index Structure
 
